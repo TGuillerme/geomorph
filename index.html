@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Geomorph : Geomorph is a software package for performing all stages of geometric morphometric shape analysis of landmark points and curves in 2-and-3-dimensions as well as 3D surfaces in the R statistical computing environment. This repository is dedicated to providing beta versions between CRAN uploads">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Geomorph</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/EmSherratt/geomorph">View on GitHub</a>
+
+          <h1 id="project_title">Geomorph</h1>
+          <h2 id="project_tagline">Geomorph is a software package for performing all stages of geometric morphometric shape analysis of landmark points and curves in 2-and-3-dimensions as well as 3D surfaces in the R statistical computing environment. This repository is dedicated to providing beta versions between CRAN uploads</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/EmSherratt/geomorph/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/EmSherratt/geomorph/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p><img src="https://picasaweb.google.com/lh/photo/f5CtI6b1ztqLb6TDHdorswQeqmSlxM4L_IpeAWAjP7E?feat=directlink" alt=""></p>
+
+<h2>
+<a id="-geomorph-website--blog" class="anchor" href="#-geomorph-website--blog" aria-hidden="true"><span class="octicon octicon-link"></span></a>&gt; <a href="http://geomorphpackage.blogspot.com/">Geomorph Website &amp; Blog</a>
+</h2>
+
+<p>Geomorph provides routines for all stages of a geometric morphometric analysis in two and three-dimensions. It allows one to read, manipulate, and digitize 2D and 3D landmark data, generate shape variables via Procrustes analysis for points, curves and surfaces, perform statistical analyses of shape variation and covariation, and provide graphical depictions of shapes and patterns of shape variation. Geomorph follows the data structures previously utilized in R in the 'shapes' package as well as in J. Claude's book '<a href="http://www.springer.com/gp/book/9780387777894">Morphometrics with R</a>'.</p>
+
+<p>There are two important components of geomorph that we emphasize. First, geomorph allows GPA of both landmarks and semilandmarks for 2D and 3D data. As such, data from points, curves, and surfaces may be combined and used in a geometric morphometric shape analysis. Second, geomorph allows digitization from 3D surface scans directly in R (one can also read in existing data). Thus, one may use the R environment for all stages of a geometric morphometric analysis.</p>
+
+<p>Here is a list of some general features of the present version of geomorph:</p>
+
+<ol>
+<li>
+<p>Shape Variable Generation</p>
+
+<ul>
+<li>GPA of landmarks (points) and semilandmarks (curve and surface points) using bending energy of Procrustes distance minimization.</li>
+</ul>
+</li>
+<li>
+<p>Statistical Analyses</p>
+
+<ul>
+<li>Analysis of Bilateral Symmetry (with calculation of symmetric and asymmetric shape components)</li>
+<li>Procrustes Anova/Regression</li>
+<li>Pairwise comparisons of groups</li>
+<li>Pairwise comparisons among slopes for groups as specified by a linear model</li>
+<li>Analysis of vectors and trajectories of phenotypic change</li>
+<li>Testing hypotheses of Modularity </li>
+<li>Quantifying the degree of Morphological Integration (both PLS and RV approaches)</li>
+<li>Two-Block Partial Least Squares analysis</li>
+<li>Comparing Morphological Disparity among groups</li>
+<li>Phylogenetic Comparative Methods</li>
+<li>Assessment of phylogenetic signal (multivariate Kappa and tree length methods)</li>
+<li>Calculation of rate of trait evolution</li>
+<li>Assessment of degree of phylogenetic morphological covariation</li>
+<li>Phylogenetic ANOVA/regression for shape data</li>
+</ul>
+</li>
+<li>
+<p>Visualization</p>
+
+<ul>
+<li>GPA scatterplots</li>
+<li>Shape differences between specimens (deformation grids, landmark displacements)</li>
+<li>Plotting tangent space (principal components analysis)</li>
+<li>Allometry plots using several current approaches (CAC, regression scores, predicted regression lines)</li>
+<li>Plotting phenotypic trajectories</li>
+<li>Plotting phylogenies in tangent space</li>
+<li>3D visualisation of shape deformations using TPS warping</li>
+</ul>
+</li>
+<li>
+<p>Data Collection</p>
+
+<ul>
+<li>read tps files</li>
+<li>read nts files</li>
+<li>read Morphologika files</li>
+<li>read ply files</li>
+<li>digitize landmarks and semilandmarks (points, curves, and surface landmarks) from 3D surface scans</li>
+<li>digitize landmarks on images</li>
+</ul>
+</li>
+<li>
+<p>Utilities</p>
+
+<ul>
+<li>easy conversion between 2D and 3D arrays</li>
+<li>estimate missing landmarks using either the Bending Energy approach and Regression approach</li>
+<li>registering landmarks on articulated structures</li>
+<li>writing data to tps files</li>
+<li>interactive functions for defining modular partitions and sliding semilandmarks</li>
+<li>interactive function for making links (wireframes) used in visualization of shape changes</li>
+<li>finding outliers</li>
+</ul>
+</li>
+</ol>
+
+<p>Over time we will incorporate additional routines in geomorph to enhance its flexibility.</p>
+
+<p>Developers: <a href="http://www.public.iastate.edu/%7Edcadams/">Dean Adams</a>, <a href="https://collyerlab.wordpress.com/">Mike Collyer</a>, and <a href="http://www.emmasherratt.com">Emma Sherratt</a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Geomorph maintained by <a href="https://github.com/EmSherratt">EmSherratt</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
