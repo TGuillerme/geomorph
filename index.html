@@ -40,21 +40,23 @@
 
 <p>There are two important components of geomorph that we emphasize. First, geomorph allows GPA of both landmarks and semilandmarks for 2D and 3D data. As such, data from points, curves, and surfaces may be combined and used in a geometric morphometric shape analysis. Second, geomorph allows digitization from 3D surface scans directly in R (one can also read in existing data). Thus, one may use the R environment for all stages of a geometric morphometric analysis.</p>
 
-<p>Here is a list of some general features of the present version of geomorph:</p>
+  <div data-role="header">
+    <h1>Collapsible Lists</h1>
+  </div>
 
-<ol>
-<li>
-<p>Shape Variable Generation</p>
+  <div data-role="main" class="ui-content">
+    <h2>Here is a list of some general features of the present version of geomorph:</h2>
+    <div data-role="collapsible">
+    <h4>Shape Variable Generation</h4>
+    <ul data-role="listview">
+      <li>GPA of landmarks (points) and semilandmarks (curve and surface points) using bending energy or Procrustes distance minimization.</li>
+    </ul>
+    </div>
 
-<ul>
-<li>GPA of landmarks (points) and semilandmarks (curve and surface points) using bending energy of Procrustes distance minimization.</li>
-</ul>
-</li>
-<li>
-<p>Statistical Analyses</p>
-
-<ul>
-<li>Analysis of Bilateral Symmetry (with calculation of symmetric and asymmetric shape components)</li>
+    <div data-role="collapsible">
+    <h4>Statistical Analyses</h4>
+    <ul data-role="listview">
+       <li>Analysis of Bilateral Symmetry (with calculation of symmetric and asymmetric shape components)</li>
 <li>Procrustes Anova/Regression</li>
 <li>Pairwise comparisons of groups</li>
 <li>Pairwise comparisons among slopes for groups as specified by a linear model</li>
@@ -68,12 +70,12 @@
 <li>Calculation of rate of trait evolution</li>
 <li>Assessment of degree of phylogenetic morphological covariation</li>
 <li>Phylogenetic ANOVA/regression for shape data</li>
-</ul>
-</li>
-<li>
-<p>Visualization</p>
+    </ul>
+    </div>
 
-<ul>
+    <div data-role="collapsible">
+    <h4>Visualization</h4>
+    <ul data-role="listview">
 <li>GPA scatterplots</li>
 <li>Shape differences between specimens (deformation grids, landmark displacements)</li>
 <li>Plotting tangent space (principal components analysis)</li>
@@ -81,24 +83,24 @@
 <li>Plotting phenotypic trajectories</li>
 <li>Plotting phylogenies in tangent space</li>
 <li>3D visualisation of shape deformations using TPS warping</li>
-</ul>
-</li>
-<li>
-<p>Data Collection</p>
+    </ul>
+    </div>
 
-<ul>
+    <div data-role="collapsible">
+    <h4>Data Collection</h4>
+    <ul data-role="listview">
 <li>read tps files</li>
 <li>read nts files</li>
 <li>read Morphologika files</li>
 <li>read ply files</li>
 <li>digitize landmarks and semilandmarks (points, curves, and surface landmarks) from 3D surface scans</li>
 <li>digitize landmarks on images</li>
-</ul>
-</li>
-<li>
-<p>Utilities</p>
+    </ul>
+    </div>
 
-<ul>
+    <div data-role="collapsible">
+    <h4>Utilities</h4>
+    <ul data-role="listview">
 <li>easy conversion between 2D and 3D arrays</li>
 <li>estimate missing landmarks using either the Bending Energy approach and Regression approach</li>
 <li>registering landmarks on articulated structures</li>
@@ -106,9 +108,9 @@
 <li>interactive functions for defining modular partitions and sliding semilandmarks</li>
 <li>interactive function for making links (wireframes) used in visualization of shape changes</li>
 <li>finding outliers</li>
-</ul>
-</li>
-</ol>
+    </ul>
+    </div>
+  </div>
 
 <p>Over time we will incorporate additional routines in geomorph to enhance its flexibility.</p>
 
