@@ -1,7 +1,7 @@
 ---
 title: "Quick Guide to Geomorph 3.0.2"
 author: "Emma Sherratt"
-date: "27 July 2016"
+date: "3 August 2016"
 output:
   pdf_document:
     number_sections: yes
@@ -25,7 +25,7 @@ citation(package="geomorph")
 ```
 Also, since the package is quickly evolving, it is advisable to cite the CRAN package and version as: 
 
-Adams, D.C., M. L. Collyer, and E. Sherratt. 2016 *geomorph*: Software for geometric morphometric analyses. *R* package version 3.x http://cran.r-project.org/web/packages/geomorph/index.html.  
+Adams, D.C., M. L. Collyer, A. Kaliontzopoulou, and E. Sherratt. 2016 *geomorph*: Software for geometric morphometric analyses. *R* package version 3.0.2 http://cran.r-project.org/web/packages/geomorph/index.html.  
 
 ## How to use this manual
 This manual is not meant to be exhaustive – the benefit of working within the *R* environment is its flexibility and infinite possibilities. Instead, the manual presents the functions in *geomorph* and how they can be used together to perform analyses to address a variety of questions in Biology, Anthropology, Paleontology, Archaeology, Medicine etc. This help guide is structured according to the pipeline outlined in **Figure 1**, which is based on a general workflow for morphometric analysis.  
