@@ -99,6 +99,8 @@ In dark blue, the function name and options. In black, an object, usually data, 
 
 Usually only the objects are necessary to run a function, as it will use the defaults for the options (which are presented in the function as above, and under "usage" in the *R* help pages). Always read the help pages and check the examples for usage. Order does not matter as long as the option is written in full, e.g., A= mydata. But " " are important, e.g., ``method = "RegScore"``.
 
+Progress bars are implemented in all analytical functions (print.progress = TRUE) and also `warpRefMesh`, which is to help users for long-running analyses. In this manual, progress bars are not printed, for brevity.
+
 ## Getting help beyond this manual
 If you have questions or problems using geomorph, please post your questions to the geomorph forum: <https://groups.google.com/d/forum/geomorph-r-package>.
 
@@ -273,7 +275,7 @@ Finally, this manual only covers *geomorph* functions. It is recommended that us
 ##	TPS files (`readland.tps`)
 **Function**   
 ```{r eval=FALSE}
-readland.tps(file, specID = c("None", "ID", "imageID"), readcurves = FALSE, warnmsg = T)
+readland.tps(file, specID = c("None", "ID", "imageID"), readcurves = FALSE, warnmsg = TRUE)
 ```
 
 **Arguments**    
@@ -769,8 +771,8 @@ Generalized Procrustes Analysis (GPA: Gower 1975; Rohlf and Slice 1990) is the p
 
 **Function**    
 ```{r eval=FALSE}
-gpagen(A, curves = NULL, surfaces = NULL, PrinAxes = TRUE, max.iter = NULL, 
-       ProcD = TRUE, Proj = TRUE)
+gpagen(A, curves = NULL, surfaces = NULL, PrinAxes = TRUE,
+  max.iter = NULL, ProcD = TRUE, Proj = TRUE, print.progress = TRUE)
 ```
 
 **Arguments**  
@@ -782,6 +784,7 @@ gpagen(A, curves = NULL, surfaces = NULL, PrinAxes = TRUE, max.iter = NULL,
 * *max.iter*  The maximum number of GPA iterations to perform before superimposition is halted. The final number of iterations could be larger than this, if curves or surface semilandmarks are involved
 * *ProcD*	A logical value indicating whether or not Procrustes distance should be used as the criterion for optimizing the positions of semilandmarks  
 * *Proj*	A logical value indicating whether or not the aligned Procrustes residuals should be projected into tangent space
+* *print.progress* A logical value to indicate whether a progress bar should be printed to the screen
 
 The function performs a Generalized Procrustes Analysis (GPA) on two-dimensional or three-dimensional landmark coordinates. The analysis can be performed on fixed landmark points, semilandmarks on curves, semilandmarks on surfaces, or any combination. To include semilandmarks on curves, one must specify a matrix defining which landmarks are to be treated as semilandmarks using the "curves=" option (this matrix can be made using `define.sliders`). Likewise, to include semilandmarks on surfaces, one must specify a vector listing which landmarks are to be treated as surface semilandmarks using the "surfaces=" option. The `ProcD=TRUE` option will slide the semilandmarks along their tangent directions using the Procrustes distance criterion, while `ProcD=FALSE` will slide the semilandmarks based on minimizing bending energy. The aligned Procrustes residuals can be projected into tangent space using the `Proj=TRUE` option. NOTE: Large datasets may exceed the memory limitations of *R*.
 
@@ -796,7 +799,7 @@ As an example, we will use the 2D landmarks of the salamander head data set save
 ```{r  echo=FALSE, message = F}
 library(geomorph)
 data(plethodon) # example dataset
-y <- gpagen(plethodon$land) # GPA-alignment 
+y <- gpagen(plethodon$land, print.progress = FALSE) # GPA-alignment 
 plotRefToTarget(y$consensus,y$consensus,outline = plethodon$outline, 
                 label = T, method = "points")
 ```
@@ -809,7 +812,7 @@ Since all of the specimens were digitized from different images, when we plot th
 
 To perform GPA-alignment
 ```{r comment = ""}
-plethodon.gpa <- gpagen(plethodon$land) 
+plethodon.gpa <- gpagen(plethodon$land, print.progress = FALSE) 
 summary(plethodon.gpa)
 ```
 Function returns a list containing the shape coordinates and centroid sizes:
@@ -865,11 +868,11 @@ This curve sliding matrix is used in the `gpagen` option `curves`. There are two
 # Using Procrustes Distance for sliding
 A <- gpagen(hummingbirds$land,
             curves=hummingbirds$curvepts,
-            ProcD=TRUE) 
+            ProcD=TRUE, print.progress = FALSE) 
 # Using bending energy for sliding
 B <- gpagen(hummingbirds$land,
             curves=hummingbirds$curvepts,
-            ProcD=FALSE) 
+            ProcD=FALSE, print.progress = FALSE) 
 ```
 For more information of how these two methods differ, and when to use which, see Gunz and Mitteroecker 2013 (Hystrix, <http://www.italian-journal-of-mammalogy.it/article/view/6292>).
   
@@ -904,7 +907,8 @@ If the data has bilateral symmetry, the first step is to perform a superimpositi
 **Function**   
 ```{r eval=FALSE}
 bilat.symmetry(A, ind = NULL, side = NULL, replicate = NULL, object.sym = FALSE, 
-               land.pairs = NULL, data = NULL, iter = 999, seed = NULL, RRPP = TRUE)
+               land.pairs = NULL, data = NULL, iter = 999, seed = NULL, RRPP = TRUE,
+               print.progress = TRUE)
 ```
 
 **Arguments**   
@@ -919,7 +923,7 @@ bilat.symmetry(A, ind = NULL, side = NULL, replicate = NULL, object.sym = FALSE,
 * *iter*  Number of iterations for significance testing
 * *seed*  An optional argument for setting the seed for random permutations of the resampling procedure. If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations). If seed = "random", a random seed will be used, and P-values will vary. One can also specify an integer for specific seed values, which might be of interest for advanced users
 * *RRPP*  A logical value indicating whether residual randomization should be used for significance testing
-
+* *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses.  
 
 The function quantifies components of shape variation for a set of specimens as described by their patterns of symmetry and asymmetry. Here, shape variation is decomposed into variation among individuals, variation among sides (directional asymmetry), and variation due to an individual x side interaction (fluctuating symmetry). These components are then statistically evaluated using Procrustes ANOVA and Goodall's F tests (i.e., an isotropic model of shape variation). Methods for both matching symmetry and object symmetry can be implemented. Matching symmetry is when each object contains mirrored pairs of structures (e.g., right and left hands) while object symmetry is when a single object is symmetric about a midline (e.g., right and left sides of human faces). Analytical and computational details concerning the analysis of symmetry in geometric morphometrics can be found in Mardia et al. (2000) and Klingenberg et al. (2002).
 
@@ -941,7 +945,7 @@ gdf <- geomorph.data.frame(wingshape = mosquito$wingshape,
       replicate=mosquito$replicate) # make geomorph.data.frame
 mosquito.sym <- bilat.symmetry(A = wingshape, ind = ind, side = side,
                 replicate = replicate, object.sym = FALSE, RRPP = TRUE, 
-                iter = 499, data = gdf) # perform matching symmetry GPA
+                iter = 499, data = gdf, print.progress = FALSE) # perform matching symmetry GPA
 summary(mosquito.sym)
 ```
 Function returns the ANOVA table for analysis of symmetry and a graph showing the shape deformations relating to the symmetric and asymmetric components of shape. The function returns also the symmetric component of shape variation (`$symm.shape`) and the asymmetric component of shape variation (`$asymm.shape`), to be used in subsequent analyses like Procrustes coordinates.
@@ -952,7 +956,7 @@ data(scallops)
 gdf <- geomorph.data.frame(shape = scallops$coorddata, ind=scallops$ind)
 scallop.sym <- bilat.symmetry(A = shape, ind = ind, object.sym = TRUE, 
                land.pairs=scallops$land.pairs, data = gdf, RRPP = TRUE, 
-               iter = 499) # perform object symmetry GPA
+               iter = 499, print.progress = FALSE) # perform object symmetry GPA
 summary(scallop.sym)
 ```
 
@@ -1073,7 +1077,7 @@ The next 4 chapters will cover *geomorph's* analytical functions, organized as f
 NOTE: The analytical functions presented here are for the analysis of multivariate data; most commonly this is Procrustes shape variables, but can also be used with non-shape, morphometric data (e.g. a set of iterlandmark distances, a.k.a. linear measurements) or any set of continuous variables. 
 
 Presented here is an extended version what is provided in the manual pages - it is recommend to read the manual page for the function by typing ?function.name in the console to see the most up-to-date info about the function. Many functions return information in the form of a list, therefore we recommend users save the results to an object as follows:
-```{r eval=F}
+```{r eval=FALSE}
 res <- procD.lm(shape ~ size)
 ```
 From version 3.0, almost all analytical functions work with the generic functions, `print`/`summary`, and `plot`. Thus following from the above example, using `plot(res)` will return a plot for that function (see ?plot.function.name for more options), and `print(res)` or `summary(res)` will print into the console the results of the analytical function. Other objects retu3rned in the `res` list might be useful for further analyses; see the specific function's manual page for more details. 
@@ -1087,9 +1091,9 @@ The following methods allow the user to test for relationship between shape and 
 Function performs Procrustes ANOVA with permutation procedures to assess statistical hypotheses describing patterns of shape variation and covariation for a set of Procrustes-aligned coordinates. To see the manual page for this function, type `?geomorph::procD.lm`.
 
 **Function**  
-```{r eval=F}
+```{r eval=FALSE}
 `procD.lm(f1, iter = 999, seed = NULL, RRPP = TRUE, 
-          int.first = FALSE, data = NULL, ...)
+          int.first = FALSE, data = NULL, print.progress = TRUE, ...)
 ```
 
 **Arguments**
@@ -1103,6 +1107,7 @@ which might be of interest for advanced users.
  * *RRPP* A logical value indicating whether residual randomization should be used for significance testing (see Introduction VI.	Permutation tests)
  * *int.first* A logical value to indicate if interactions of first main effects should precede subsequent main effects}
  * *data* A data frame for the function environment, see `geomorph.data.frame`
+ * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses  
  * *...* Arguments passed on to procD.fit (typically associated with the `lm` function)
   
 ### Common uses of this function
@@ -1133,14 +1138,16 @@ library(geomorph)
 ```
 ```{r comment=""}
 data(plethodon) # example dataset
-Y.gpa <- gpagen(plethodon$land)    # GPA-alignment  
+Y.gpa <- gpagen(plethodon$land, print.progress = FALSE)    # GPA-alignment  
 gdf <- geomorph.data.frame(shape = Y.gpa$coords, 
 site = plethodon$site, species = plethodon$species) # make geomorph data frame
 
 # permutation option 1: randomize raw values
-procD.lm(shape ~ species * site, data = gdf, iter = 999, RRPP = FALSE)
+procD.lm(shape ~ species * site, data = gdf, iter = 999, 
+         RRPP = FALSE, print.progress = FALSE)
 # permutation option 1: randomize residuals
-procD.lm(shape ~ species * site, data = gdf, iter = 999, RRPP = TRUE) 
+procD.lm(shape ~ species * site, data = gdf, iter = 999, 
+         RRPP = TRUE, print.progress = FALSE) 
 ```
 
 ## Advanced Procrustes ANOVA and pairwise tests for shape data, using complex linear models (`advanced.procD.lm`)
@@ -1150,7 +1157,7 @@ Function is an advanced version of `procD.lm`, which quantifies the relative amo
 ```{r eval=FALSE}
 advanced.procD.lm(f1, f2, groups = NULL, slope = NULL, 
   angle.type = c("r","deg", "rad"), phy = NULL, pc.shape = FALSE, 
-  iter = 999, seed = NULL, data = NULL, ...)
+  iter = 999, seed = NULL, print.progress = TRUE, data = NULL,...)
 ```
 
 **Arguments**  
@@ -1168,6 +1175,7 @@ If left NULL (the default), the exact same P-values will be found for repeated r
 If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values,
 which might be of interest for advanced users.
  * *data* A data frame for the function environment, see `geomorph.data.frame`
+ * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses  
  * *...* Arguments passed on to `procD.fit` (typically associated with the `lm` function)
  
  NOTE: This function can also be used with non-shape, multivariate data in y (e.g. a set of iterlandmark distances, a.k.a. linear measurements). 
@@ -1178,13 +1186,13 @@ For more information on how to use this function see: http://geomorphpackage.blo
 Test of homogeneity of slopes, plus pairwise slopes comparisons
 ```{r comment=""}
 data(plethodon) # example dataset
-Y.gpa <- gpagen(plethodon$land)    # GPA-alignment  
+Y.gpa <- gpagen(plethodon$land, print.progress = FALSE)    # GPA-alignment  
 gdf <- geomorph.data.frame(shape = Y.gpa$coords, logcs = log(Y.gpa$Csize), 
 site = plethodon$site, species = plethodon$species) # make geomorph data frame
 
 advanced.procD.lm(shape ~ logcs, ~logcs + site*species, 
 groups = ~site*species, slope = ~logcs, angle.type = "deg", 
-iter = 199, data = gdf)
+iter = 199, data = gdf, print.progress = FALSE)
 ```
 
 ## Procrustes ANOVA/regression, specifically for shape-size covariation (allometry) (`procD.allometry`)
@@ -1193,7 +1201,7 @@ Function performs Procrustes ANOVA with permutation procedures to assess statist
 **Function**    
 ```{r eval=FALSE}
 procD.allometry(f1, f2 = NULL, f3 = NULL, logsz = TRUE, iter = 999,
-  seed = NULL, alpha = 0.05, RRPP = TRUE, data = NULL, ...)
+  seed = NULL, alpha = 0.05, RRPP = TRUE, , print.progress = TRUE, data = NULL, ...)
 ```
 
 **Arguments**   
@@ -1209,6 +1217,7 @@ If seed = "random", a random seed will be used, and P-values will vary.  One can
 which might be of interest for advanced users
  * *alpha* The significance level for the homegeneity of slopes test
  * *RRPP* A logical value indicating whether residual randomization should be used for significance testing (see Introduction VI.	Permutation tests)
+ * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
  * *data* A data frame for the function environment, see `geomorph.data.frame`
  * *...* Arguments passed on to `procD.fit` (typically associated with the `lm` function)
  
@@ -1221,18 +1230,20 @@ There are three formulae that need to be input (see Arguments). The first must c
 Simple allometry
 ```{r comment=""}
 data(plethodon) # example dataset
-Y.gpa <- gpagen(plethodon$land)    # GPA-alignment  
+Y.gpa <- gpagen(plethodon$land, print.progress = FALSE)    # GPA-alignment  
 # make geomorph data frame
 gdf <- geomorph.data.frame(shape = Y.gpa$coords, cs = Y.gpa$Csize) 
 
-plethAllometry <- procD.allometry(shape~cs, logsz = TRUE, data=gdf, iter=499)
+plethAllometry <- procD.allometry(shape~cs, logsz = TRUE, data=gdf, 
+                                  iter=499, print.progress = FALSE)
 summary(plethAllometry) # results identical to procD.lm
 ```
 
 Obtaining size-adjusted residuals (and allometry-free shapes)
 ```{r comment=""}
 plethAnova <- procD.lm(plethAllometry$formula,
-     data = plethAllometry$data, iter = 499, RRPP=TRUE) 
+     data = plethAllometry$data, iter = 499, 
+     RRPP=TRUE, print.progress = FALSE) 
 summary(plethAnova) # same ANOVA Table
 # save size-adjusted residuals an make as 3D array
 shape.resid <- arrayspecs(plethAnova$residuals,
@@ -1245,12 +1256,12 @@ plotTangentSpace(adj.shape) # PCA of allometry-free shape
 Comparing allometric slopes between groups (Homogeneity of Slopes Test)
 ```{r comment=""}
 data(plethodon) # example dataset
-Y.gpa <- gpagen(plethodon$land)    # GPA-alignment
+Y.gpa <- gpagen(plethodon$land, print.progress = FALSE)    # GPA-alignment
 # make geomorph data frame
 gdf <- geomorph.data.frame(shape = Y.gpa$coords, cs = Y.gpa$Csize, 
                            site = plethodon$site, species = plethodon$species) 
 plethAllometry <- procD.allometry(shape~cs, ~species*site,
-logsz = TRUE, data=gdf, iter=499, RRPP=TRUE)
+logsz = TRUE, data=gdf, iter=499, RRPP=TRUE, print.progress = FALSE)
 summary(plethAllometry)
 plot(plethAllometry, method = "PredLine")
 ```
@@ -1260,7 +1271,7 @@ Function performs two-block partial least squares analysis to assess the degree 
 
 **Function**    
 ```{r eval=FALSE}
-two.b.pls(A1, A2, iter = 999, seed = NULL)
+two.b.pls(A1, A2, iter = 999, seed = NULL, print.progress = TRUE)
 ```
 
 **Arguments**    
@@ -1268,10 +1279,8 @@ two.b.pls(A1, A2, iter = 999, seed = NULL)
  * *A1* A 3D array (p x k x n) containing GPA-aligned coordinates, or a matrix (n x variables), for the first block
  * *A2* A 3D array (p x k x n) containing GPA-aligned coordinates, or a matrix (n x variables), for the second block
  * *iter* Number of iterations for significance testing
- * *seed* An optional argument for setting the seed for random permutations of the resampling procedure.
-If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations).
-If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values,
-which might be of interest for advanced users.
+ * *seed* An optional argument for setting the seed for random permutations of the resampling procedure. If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations). If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values, which might be of interest for advanced users.
+  * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
 
 NOTE: This function can also be used with non-shape, multivariate data in A1 or A2 (e.g. a set of iterlandmark distances, a.k.a. linear measurements, or ecological variables). 
 
@@ -1279,13 +1288,14 @@ NOTE: This function can also be used with non-shape, multivariate data in A1 or 
 2B-PLS between plethodon head shape and food use data
 ```{r comment=""}
 data(plethShapeFood) # example dataset 
-Y.gpa<-gpagen(plethShapeFood$land)    # GPA-alignment    
-PLS <-two.b.pls(Y.gpa$coords,plethShapeFood$food,iter=999)
+Y.gpa<-gpagen(plethShapeFood$land, print.progress = FALSE)    # GPA-alignment    
+PLS <-two.b.pls(Y.gpa$coords, plethShapeFood$food, 
+                iter=999, print.progress = FALSE)
 summary(PLS) # Test summary
 plot(PLS) # PLS plot
 ```
 
-------
+______
 # Morphological Integration methods
 Morphological integration is the tendancy of morphological traits to vary in a coordinated manner, and usually studied through testing the strength of covariation between two or more sets of traits. The related concept, modularity, is when an orgnaism's structure is compartmentalized, and can be analyzed in a variety of ways. *geomorph* presents a few of the recent methods in studing morphological integration and modularity in high-dimensional data. Suggested reading on the subject: Klingenberg 2008, Klingenberg 2014, Mitteroecker & Bookstein 2007 and references therein. 
 
@@ -1294,7 +1304,7 @@ Function quantifies the degree of morphological integration between modules of P
 
 **Function**    
 ```{r eval=FALSE}
-integration.test(A, A2 = NULL, partition.gp = NULL, iter = 999, seed = NULL)
+integration.test(A, A2 = NULL, partition.gp = NULL, iter = 999, seed = NULL, print.progress = TRUE)
 ```
 
 **Arguments**   
@@ -1303,19 +1313,18 @@ integration.test(A, A2 = NULL, partition.gp = NULL, iter = 999, seed = NULL)
  * *A2* Optional 3D array containing GPA-aligned coordinates, or 2D matrix, for the second partition
  * *partition.gp* A vector describing which landmarks (or variables) belong in which partition (e.g. A,A,A,B,B,B,C,C,C) (required when only A is provided)
  * *iter* Number of iterations for significance testing
- * *seed* An optional argument for setting the seed for random permutations of the resampling procedure.
-If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations).
-If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values,
-which might be of interest for advanced users.
+ * *seed* An optional argument for setting the seed for random permutations of the resampling procedure. If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations). If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values, which might be of interest for advanced users.
+  * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
 
 **Example**  
 Test for morphological integration between plethodon skull and mandible shape
 ```{r comment=""}
 data(plethodon) # example dataset
-Y.gpa<-gpagen(plethodon$land)    # GPA-alignment    
+Y.gpa<-gpagen(plethodon$land, print.progress = FALSE)    # GPA-alignment    
 # landmarks on the skull and mandible assigned to partitions B and A reseptively
 land.gps<-c("A","A","A","A","A","B","B","B","B","B","B","B") 
-IT <- integration.test(Y.gpa$coords, partition.gp=land.gps, iter=999)
+IT <- integration.test(Y.gpa$coords, partition.gp=land.gps, 
+                       iter=999, print.progress = FALSE)
 summary(IT) # Test summary
 plot(IT) # PLS plot
 ```
@@ -1325,7 +1334,7 @@ Function quantifies the degree of modularity between two or more hypothesized mo
 
 **Function**    
 ```{r eval=FALSE}
-modularity.test(A, partition.gp, iter = 999, CI = FALSE, seed = NULL)
+modularity.test(A, partition.gp, iter = 999, CI = FALSE, seed = NULL, print.progress = TRUE)
 ```
 
 **Arguments**  
@@ -1334,17 +1343,17 @@ modularity.test(A, partition.gp, iter = 999, CI = FALSE, seed = NULL)
  * *partition.gp* A vector describing which landmarks (or variables) belong in which partition (e.g. A,A,A,B,B,B,C,C,C)
  * *iter* Number of iterations for significance testing
  * *CI* A logical argument indicating whether bootstrapping should be used for estimating confidence intervals
- * *seed* An optional argument for setting the seed for random permutations of the resampling procedure.
-If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations). If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values, which might be of interest for advanced users.
+ * *seed* An optional argument for setting the seed for random permutations of the resampling procedure. If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations). If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values, which might be of interest for advanced users
+  * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
 
 **Example**  
 Test for morphological integration between plethodon skull and mandible shape
 ```{r comment=""}
 data(pupfish) # example dataset
-Y.gpa<-gpagen(pupfish$coords)    # GPA-alignment    
+Y.gpa<-gpagen(pupfish$coords, print.progress = FALSE)    # GPA-alignment    
 # Define landmarks on the body (a) and operculum (b)
 land.gps<-rep('a',56); land.gps[39:48]<-'b'
-MT <- modularity.test(Y.gpa$coords,land.gps,CI=FALSE,iter=499)
+MT <- modularity.test(Y.gpa$coords,land.gps,CI=FALSE,iter=499, print.progress = FALSE)
 summary(MT) # Test summary
 plot(MT) # Histogram of CR sampling distribution 
 ```
@@ -1367,7 +1376,7 @@ Choosing which landmarks will be included in each module involves landmark selec
 #### Selection in 3D
 Choosing which landmarks will be included in each module involves landmark selection using a mouse in the rgl plot window. The user is prompted to select one or more landmarks. To do so, use the RIGHT mouse button (or command + LEFT button for Mac users), draw a rectangle around one or more landmarks to select. Selected landmarks will be colored yellow. Then type into the console a letter (e.g. 1, 2, 3...) to assign selected landmark(s) to this module. Repeat until all landmarks are assigned to modules.
 
-```{r eval=F}
+```{r eval=FALSE}
 # using first specimen of plethodon dataset
 partition.gp <- define.modules(plethodon$land[,,1], 2) 
 Select landmarks in module 1
@@ -1376,14 +1385,14 @@ Press esc when finished
 
 ![define.modules1](define.modules.png)
 
-```{r eval=F}
+```{r eval=FALSE}
 Select landmarks in module 2
 Press esc when finished 
 ```
 
 ![define.modules1](define.modules2.png)
 
-```{r eval=F}
+```{r eval=FALSE}
 partition.gp
  [1] "1" "1" "1" "1" "1" "2" "2" "2" "2" "2" "2" "2"
 ```
@@ -1399,7 +1408,7 @@ Function calculates the degree of phylogenetic signal from a set of Procrustes-a
 
 **Function**    
 ```{r eval=FALSE}
-physignal(A, phy, iter = 999, seed = NULL)
+physignal(A, phy, iter = 999, seed = NULL, print.progress = TRUE)
 ```
 
 **Arguments**  
@@ -1407,23 +1416,23 @@ physignal(A, phy, iter = 999, seed = NULL)
  * *A* A 3D array (p x k x n) containing GPA-aligned coordinates of all specimens, or a matrix (n x variables)
  * *phy* A phylogenetic tree of class phylo - see `?ape::read.tree` (optional)
  * *iter* Number of iterations for significance testing
- * *seed* An optional argument for setting the seed for random permutations of the resampling procedure.
-If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations).
-If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values,
-which might be of interest for advanced users.
+ * *seed* An optional argument for setting the seed for random permutations of the resampling procedure. If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations). If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values, which might be of interest for advanced users
+  * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
 
 **Example**  
 Test for phylogenetic signal in plethodon head shape
 ```{r comment=""}
 data(plethspecies) # example dataset
-Y.gpa<-gpagen(plethspecies$land)    # GPA-alignment    
-PS.shape <- physignal(A=Y.gpa$coords,phy=plethspecies$phy,iter=999)
+Y.gpa<-gpagen(plethspecies$land, print.progress = FALSE)    # GPA-alignment    
+PS.shape <- physignal(A=Y.gpa$coords,phy=plethspecies$phy,
+                      iter=999, print.progress = FALSE)
 summary(PS.shape) # Test summary
 plot(PS.shape) # Histogram
 ```
 Test for phylogenetic signal in plethodon head size
 ```{r comment=""}
-PS.size <- physignal(A=Y.gpa$Csize,phy=plethspecies$phy,iter=999)
+PS.size <- physignal(A=Y.gpa$Csize,phy=plethspecies$phy,
+                     iter=999, print.progress = FALSE)
 summary(PS.size) # Test summary
 plot(PS.size) # Histogram
 ```
@@ -1434,7 +1443,7 @@ Function quantifies the degree of phylogenetic morphological covariation between
 **Function**    
 ```{r eval=FALSE}
 phylo.integration(A, A2 = NULL, phy, partition.gp = NULL, iter = 999,
-  seed = NULL)
+  seed = NULL, print.progress = TRUE)
 ```
 
 **Arguments**    
@@ -1444,20 +1453,18 @@ phylo.integration(A, A2 = NULL, phy, partition.gp = NULL, iter = 999,
  * *phy* A phylogenetic tree of class phylo - see `?ape::read.tree` (optional)
  * *partition.gp* A vector describing which landmarks (or variables) belong in which partition (e.g. A,A,A,B,B,B,C,C,C) (required when only A is provided)
  * *iter* Number of iterations for significance testing
- * *seed* An optional argument for setting the seed for random permutations of the resampling procedure.
-If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations).
-If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values,
-which might be of interest for advanced users.
+ * *seed* An optional argument for setting the seed for random permutations of the resampling procedure. If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations). If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values, which might be of interest for advanced users
+  * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
 
 **Example**  
 Test for phylogentic morphological integration between plethodon cranium and mandible shape
 ```{r comment=""}
 data(plethspecies) # example dataset
-Y.gpa<-gpagen(plethspecies$land)    # GPA-alignment    
+Y.gpa<-gpagen(plethspecies$land, print.progress = FALSE)    # GPA-alignment    
 # landmarks on the skull and mandible assigned to partitions B and A reseptively
 land.gps<-c("A","A","A","A","A","B","B","B","B","B","B")
-IT<- phylo.integration(Y.gpa$coords,partition.gp=land.gps,
-                       phy=plethspecies$phy,iter=999)
+IT<- phylo.integration(Y.gpa$coords,partition.gp=land.gps, phy=plethspecies$phy, 
+                       iter=999, print.progress = FALSE)
 summary(IT) # Test summary
 plot(IT) # PLS plot
 ```
@@ -1468,7 +1475,7 @@ Function calculates rates of shape evolution for two or more groups of species o
 
 **Function**    
 ```{r eval=FALSE}
-compare.evol.rates(A, phy, gp, iter = 999)
+compare.evol.rates(A, phy, gp, iter = 999, print.progress = TRUE)
 ```
 
 **Arguments** 
@@ -1477,16 +1484,18 @@ compare.evol.rates(A, phy, gp, iter = 999)
  * *phy* A phylogenetic tree of class phylo - see `?ape::read.tree` (optional)
  * *gp* A factor describing group membership
  * *iter* Number of iterations for significance testing
+  * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
  
 **Example**  
 Test for phylogentic morphological integration between plethodon cranium and mandible shape
 ```{r comment=""}
 data(plethspecies) # example dataset
-Y.gpa<-gpagen(plethspecies$land)    # GPA-alignment    
+Y.gpa<-gpagen(plethspecies$land, print.progress = FALSE)    # GPA-alignment    
 # group factor endangered species vs. rest
 gp.end<-factor(c(0,0,1,0,0,1,1,0,0))  
  names(gp.end)<-plethspecies$phy$tip
-ER<-compare.evol.rates(A=Y.gpa$coords, phy=plethspecies$phy,gp=gp.end,iter=999)
+ER<-compare.evol.rates(A=Y.gpa$coords, phy=plethspecies$phy, gp=gp.end,
+                       iter=999, print.progress = FALSE)
 summary(ER) # Test summary
 plot(ER) # Histogram
 ```
@@ -1496,7 +1505,7 @@ Function compares rates of morphological evolution for two or more multi-dimensi
 
 **Function**    
 ```{r eval=FALSE}
-compare.multi.evol.rates(A, gp, phy, Subset = TRUE, iter = 999)
+compare.multi.evol.rates(A, gp, phy, Subset = TRUE, iter = 999, print.progress = TRUE)
 ```
 
 **Arguments**  
@@ -1506,6 +1515,7 @@ compare.multi.evol.rates(A, gp, phy, Subset = TRUE, iter = 999)
  * *phy* A phylogenetic tree of class phylo - see `?ape::read.tree` (optional)
  * *Subset* A logical value indicating whether or not the traits are subsets from a single landmark configuration (default is TRUE)
  * *iter* Number of iterations for significance testing
+  * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
  
 Comparisons of evolutionary rates between traits may be accomplished in one of two ways. First, if the traits are are part of a single shape that was subjected to a single Procrustes superimposition (i.e., they are subsets of landmarks in the configuration), then the procedure is performed without alteration as described above (`Subset = TRUE`). However, if the shapes are derived from different structures (shapes) that were superimposed separately, then the estimates of the rates must take the difference in the number of trait dimensions into account (see discussion in Denton and Adams 2015). This option is identified by selecting `Subset = FALSE`.
  
@@ -1513,11 +1523,11 @@ Comparisons of evolutionary rates between traits may be accomplished in one of t
 Test for phylogentic morphological integration between plethodon cranium and mandible shape
 ```{r comment=""}
 data(plethspecies) # example dataset
-Y.gpa<-gpagen(plethspecies$land)    # GPA-alignment    
+Y.gpa<-gpagen(plethspecies$land, print.progress = FALSE)    # GPA-alignment    
 # landmarks on the skull and mandible assigned to partitions B and A reseptively
 land.gps<-c("A","A","A","A","A","B","B","B","B","B","B")
 EMR<-compare.multi.evol.rates(A=Y.gpa$coords,gp=land.gps, 
-    Subset=TRUE, phy= plethspecies$phy,iter=999)
+    Subset=TRUE, phy= plethspecies$phy, iter=999, print.progress = FALSE)
 summary(EMR) # Test summary
 plot(EMR) # Histogram
 ```
@@ -1528,7 +1538,7 @@ Function performs Procrustes ANOVA and regression models in a phylogenetic conte
 **Function**    
 ```{r eval=FALSE}
 procD.pgls(f1, phy, iter = 999, seed = NULL, int.first = FALSE,
-  RRPP = TRUE, data = NULL, ...)
+  RRPP = TRUE, data = NULL, print.progress = TRUE, ...)
 ```
 
 **Arguments**  
@@ -1536,14 +1546,12 @@ procD.pgls(f1, phy, iter = 999, seed = NULL, int.first = FALSE,
  * *f1* A formula for the linear model (e.g., y~x1+x2)
  * *phy* A phylogenetic tree of class phylo - see `?ape::read.tree` (optional)
  * *iter* Number of iterations for significance testing
- * *seed* An optional argument for setting the seed for random permutations of the resampling procedure.
-If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations).
-If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values,
-which might be of interest for advanced users.
+ * *seed* An optional argument for setting the seed for random permutations of the resampling procedure. If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations). If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values, which might be of interest for advanced users
  * *int.first* A logical value to indicate if interactions of first main effects should precede subsequent main effects}
  * *RRPP* A logical value indicating whether residual randomization should be used for significance testing (see Introduction VI.	Permutation tests)
  * *data* A data frame for the function environment, see `geomorph.data.frame`
  * *...* Arguments passed on to procD.fit (typically associated with the `lm` function)
+  * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
  
 The function works in the same manner as `procD.lm`. 
 
@@ -1551,14 +1559,16 @@ The function works in the same manner as `procD.lm`.
 Testing for evolutionary allometry with a D-PGLS approach
 ```{r comment=""}
 data(plethspecies) # example dataset
-Y.gpa<-gpagen(plethspecies$land)    # GPA-alignment    
+Y.gpa<-gpagen(plethspecies$land, print.progress = FALSE)    # GPA-alignment    
 gdf <- geomorph.data.frame(shape = Y.gpa$coords, cs = Y.gpa$Csize, 
 phy = plethspecies$phy) # make geomorph data frame
 
 # permutation option 1: randomize raw values
-procD.pgls(shape ~ log(cs), phy = phy, data = gdf, iter = 999, RRPP = FALSE) 
+procD.pgls(shape ~ log(cs), phy = phy, data = gdf, iter = 999, RRPP = FALSE, 
+           print.progress = FALSE) 
 # permutation option 1: randomize residuals
-procD.pgls(shape ~ log(cs), phy = phy, data = gdf, iter = 999, RRPP = TRUE)
+procD.pgls(shape ~ log(cs), phy = phy, data = gdf, iter = 999, RRPP = TRUE, 
+           print.progress = FALSE)
 ```
 
 # Other methods
@@ -1568,7 +1578,7 @@ Function estimates morphological disparity and performs pairwise comparisons amo
 **Function**    
 ```{r eval=FALSE}
 morphol.disparity(f1, groups = NULL, iter = 999, seed = NULL,
-  data = NULL, ...)
+  data = NULL, print.progress = TRUE ...)
 ```
   
 **Arguments**   
@@ -1577,25 +1587,29 @@ morphol.disparity(f1, groups = NULL, iter = 999, seed = NULL,
  * *groups* A formula designating groups, e.g., `groups = ~ groups`. If NULL, `morphol.disparity` will attempt to define groups based on the linear model formula, `f1`. If there are no groups inherently indicated in `f1` and `groups` is NULL, a single Procrustes variance will be returned for the entire data set.
  * *iter* Number of iterations for permutation test
  * *seed* An optional argument for setting the seed for random permutations of the resampling procedure. If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations). If seed = "random", a random seed will be used, and P-values will vary. One can also specify an integer for specific seed values, which might be of interest for advanced users.
- * *data* A data frame for the function environment, see geomorph.data.frame
+ * *data* A data frame for the function environment, see `geomorph.data.frame`
+  * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
  * *...* Arguments passed on to `procD.fit` (typically associated with the `lm` function)
 
 **Example**  
 ```{r comment=""}
 data(plethodon) # example dataset
-Y.gpa<-gpagen(plethodon$land)    # GPA-alignment    
+Y.gpa<-gpagen(plethodon$land, print.progress = FALSE) # GPA-alignment    
 gdf <- geomorph.data.frame(shape = Y.gpa$coords,
-site = plethodon$site, species = plethodon$species) # make geomorph data frame
+       site = plethodon$site, species = plethodon$species) # make geomorph data frame
+
+# Morphological disparity for entire data set
+morphol.disparity(shape ~ 1, groups= NULL, data = gdf, iter=999, 
+                  print.progress = FALSE)
+
+# Morphological disparity without covariates, using overall mean
+morphol.disparity(shape ~ 1, groups= ~ species*site, data = gdf, iter=999, 
+                  print.progress = FALSE)
+
+# Morphological disparity without covariates, using group means
+morphol.disparity(shape ~ species*site, groups= ~species*site, data = gdf, iter=999, 
+                  print.progress = FALSE)
 ```
-Morphological disparity for entire data set
-```morphol.disparity(shape ~ 1, groups= NULL, data = gdf, iter=999)```
-
-Morphological disparity without covariates, using overall mean
-```morphol.disparity(shape ~ 1, groups= ~ species*site, data = gdf, iter=999)```
-
-Morphological disparity without covariates, using group means
-```morphol.disparity(shape ~ species*site, groups= ~species*site, data = gdf, iter=999)```
-
 
 ## Quantify and compare shape change trajectories (`trajectory.analysis`)
 Function quantifies phenotypic shape change trajectories from a set of specimens, and assesses variation in attributes of the trajectories via permutation. A shape change trajectory is defined by a sequence of shapes in tangent space. These trajectories can be quantified for various attributes (their size, orientation, and shape), and comparisons of these attribute enable the statistical comparison of shape change trajectories (see Collyer and Adams 2013; Collyer and Adams 2007; Adams and Collyer 2007; Adams and Collyer 2009). To see the manual page for this function, type `?geomorph::trajectory.analysis`.
@@ -1603,68 +1617,27 @@ Function quantifies phenotypic shape change trajectories from a set of specimens
 **Function**    
 ```{r eval=FALSE}
 trajectory.analysis(f1, f2 = NULL, iter = 999, seed = NULL,
-  traj.pts = NULL, data = NULL)
+  traj.pts = NULL, data = NULL, print.progress = TRUE, ...)
 ```
-  
+
 **Arguments** 
 
- * *f1* A formula for the linear model, for trajectories (e.g., Y ~ A or Y ~ A * B). The right hand side of this formula can contain only one or two factors
- * *f2* A formula for additional covariates (e.g., ~ x1 + x2)
+ * *f1* A formula for the linear model, for trajectories (e.g., `Y ~ A` or `Y ~ A * B`). The right hand side of this formula can contain only one or two factors
+ * *f2* A formula for additional covariates (e.g., `~ x1 + x2`)
  * *iter* Number of iterations for permutation test
  * *seed* An optional argument for setting the seed for random permutations of the resampling procedure. If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations). If seed = "random", a random seed will be used, and P-values will vary. One can also specify an integer for specific seed values, which might be of interest for advanced users.
  * *traj.pts* An optional value specifying the number of points in each trajectory (if f1 contains a single factor)
- * *data* A data frame for the function environment, see geomorph.data.frame
+ * *data* A data frame for the function environment, see `geomorph.data.frame`
+ * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
  * *...* Arguments passed on to `procD.fit` (typically associated with the `lm` function)
+ 
+Data input is specified by a two formulae (e.g., `Y ~ X`), where 'Y' specifies the response variables (trajectory data), and 'X' contains one or more independent variables (discrete or continuous). The response matrix 'Y' can be either in the form of a two-dimensional data matrix of dimension (n x [p x k]), or a 3D array (p x n x k). It is assumed that the order of the specimens 'Y' matches the order of specimens in 'X'.
 
-Data input is specified by a two formulae (e.g., Y ~ X), where 'Y' specifies the response variables (trajectory data), and 'X' contains one or more independent variables (discrete or continuous). The response matrix 'Y' can be either in the form of a two-dimensional data matrix of dimension (n x [p x k]), or a 3D array (p x n x k). It is assumed that the order of the specimens 'Y' matches the order of specimens in 'X'.
-
-Linear model fits (using the `lm` function) can also be input in place of a formula. Arguments for lm can also be passed on via this function. The first formula, f1, must contain the independent variable on the left-hand side of the formula (e.g., Y ~) and either a single factor or a two factor interaction on the right-hand side. 
+Linear model fits (using the `lm` function) can also be input in place of a formula. Arguments for `lm` can also be passed on via this function. The first formula, f1, must contain the independent variable on the left-hand side of the formula (e.g., `Y ~`) and either a single factor or a two factor interaction on the right-hand side. 
 
 If a single factor is provided, e.g., Y ~ A, it is assumed that groups to be described are the levels of factor A and that the data in Y comprise trajectories. In this case, the traj.pts = NULL argument must be changed to a numeric value to define the number of points in the trajectory. It is also assumed that the data are structured as variables within points. For example, y11 y21 y31 y12 y22 y32 y13 y23 y33 y14 y24 y34 would be columns of a matrix, Y, describing a 4-point trajectory in a data space defined by three variables. This is the proper arrangement; the following is an improper arrangement: y11 y12 y13 y14 y21 y22 y23 y24 y31 y32 y33 y34, as it groups points within variables. This approach is typical when comparing motion paths (see Adams and Cerney 2007).
 
-**Example**  
-Motion paths represented by 5 time points per motion 
-```{r comment=""}
-data(motionpaths) # example dataset
-gdf <- geomorph.data.frame(trajectories = motionpaths$trajectories,
-groups = motionpaths$groups) # make geomorph data frame
-
-TA <- trajectory.analysis(f1 = trajectories ~ groups, 
-traj.pts = 5, data=gdf, iter=199)
-summary(TA)
-plot(TA)
-```
-
-If f1 is a two-factor factorial model, e.g., Y ~ A*B, it is assumed that the first factor defines groups, the second factor defines trajectory points, and that trajectories are to be estimated from the linear model. In this case, the preceding example would have a Y matrix comprised only of y1, y2, and y3, but the factor B would contain levels to define the four points (see Examples).
-
-**Example**  
-Estimate trajectories from LS means in 2-factor model
-```{r comment=""}
-data(plethodon) # example dataset
-Y.gpa <- gpagen(plethodon$land) # GPA-alignment  
-# make geomorph data frame
-gdf <- geomorph.data.frame(Y.gpa, species =plethodon$species, site =plethodon$site)
-TA <- trajectory.analysis(coords ~ species*site, data=gdf, iter=199)
-summary(TA, angle.type = "deg")
-plot(TA)
-```
-
-If one wishes to include other variables in the linear model, they should be indicated in the second formula, f2. This formula can be simply a right-hand formula, e.g., ~ x1 + x2 + x3 +... Variables in this formula will typically be covariates that one wishes to include to account for extraneous sources of shape variation. An analysis of variance (ANOVA) will be performed with type I sums of squares (SS) and a randomized residual permutation procedure (RRPP). The variables in f2 will be added prior to the trajectory defining variables in f1.
-
-**Example**  
-Add Centroid size as a covariate
-```{r comment=""}
-data(plethodon) # example dataset
-Y.gpa <- gpagen(plethodon$land) # GPA-alignment  
-# make geomorph data frame
-gdf <- geomorph.data.frame(Y.gpa, species =plethodon$species, site =plethodon$site)
-TA <- trajectory.analysis(f1 = coords ~ species*site, f2 = ~ Csize, 
-                          data=gdf, iter=199)
-summary(TA, angle.type = "deg")
-plot(TA)
-```
-
-As shown in these examples, once the function has performed the analysis, a plot can be generated of the trajectories as visualized in the space of principal components (PC1 vs. PC2). See visualizations chapter 13.9 for details. 
+[Examples to be added]
 
 \pagebreak
 
@@ -1676,7 +1649,10 @@ The next 4 chapters will cover *geomorph's* visualization functions, organized a
 Usually the first step in a geometric morphometrics study, a Principal Components Anlaysis (PCA) is an ordination method to visualize the shape variation among individual specimens in the dataset. The function `plotTangentSpace` plots a set of Procrustes-aligned specimens in tangent space along their principal axes, i.e., function performs PCA.
 
 **Function**    
-`plotTangentSpace(A, axis1 = 1, axis2 = 2, warpgrids = TRUE, mesh = NULL, label = FALSE, groups = NULL, legend = FALSE)`
+```{r eval=FALSE}
+plotTangentSpace(A, axis1 = 1, axis2 = 2, warpgrids = TRUE, mesh = NULL, label = FALSE, 
+                  groups = NULL, legend = FALSE)
+```
 
 **Arguments**    
 
@@ -1699,12 +1675,12 @@ NOTE 2: previous versions of plotTangentSpace had option 'verbose' to return the
 ```{r  echo=FALSE, message = FALSE, comment=""}
 library(geomorph)
 ```
-```{r}
+```{r comment=""}
 data(plethodon) # example dataset
-Y.gpa<-gpagen(plethodon$land) # GPA-alignment
+Y.gpa<-gpagen(plethodon$land, print.progress = FALSE) # GPA-alignment
 gp <- as.factor(paste(plethodon$species, plethodon$site)) # create grouping variable
-PCA <- plotTangentSpace(Y.gpa$coords, groups = gp)
-head(PCA$importance)  # to see the importance of the PC axes
+PCA <- plotTangentSpace(Y.gpa$coords, groups = gp, legend = TRUE)
+summary(PCA)  # to see the importance of the PC axes
 ```
 
 To plot a graph of the proportion of variance explained by each PC:
@@ -1715,7 +1691,7 @@ barplot(pvar,  xlab= "Principal Components", ylab = "% Variance")
 ```
 
 ProTip! To easily change colors of groups in plotTangentSpace
-```{r eval=F, comment=""}
+```{r eval=FALSE, comment=""}
 col.gp<-c(rep("black",10),rep("red",10),
           rep("yellow",10),rep("orange",10))  # not a factor
 plotTangentSpace(Y.gpa$coords, groups = col.gp, legend = TRUE)
@@ -1787,7 +1763,7 @@ for(j in 1:nlevels(pupfish$Sex)) {
 Another common ordination method is to perform a Principal Components Analysis of species mean shape data and the project a phylogenetic tree into this space, i.e., a phylomorphospace. Function creates a plot of the principal dimensions of tangent space for a set of Procrustes-aligned specimens. Default is a plot of PC axis 1 and 2. The phylogenetic tree for these specimens is superimposed in this plot revealing how shape evolves (e.g., Rohlf 2002; Klingenberg and Gidaszewski 2010; Sidlauskas 2008). The plot also displays the ancestral states for each node of the phylogenetic tree (analogous to from fastAnc from phytools), whose values can optionally be returned. If a tree with branch lengths scaled by time is used, with the option zaxis = "time", the function plots a 3D phylomorphospace, with internal nodes positioned along the Z-axis scaled to time (a.k.a. Chronophylomorphospace, Sakamoto & Ruta 2012).
 
 **Function**    
-```
+```{r eval=FALSE}
 plotGMPhyloMorphoSpace(phy, A, tip.labels = TRUE, node.labels = TRUE,
   ancStates = TRUE, xaxis = 1, yaxis = 2, zaxis = NULL,
   plot.param = list(), shadow = FALSE)
@@ -1808,14 +1784,14 @@ plotGMPhyloMorphoSpace(phy, A, tip.labels = TRUE, node.labels = TRUE,
 
 ```{r}
 data(plethspecies)
-Y.gpa<-gpagen(plethspecies$land)
+Y.gpa<-gpagen(plethspecies$land, print.progress = FALSE)
 plotGMPhyloMorphoSpace(plethspecies$phy,Y.gpa$coords,
                        plot.param=list(t.bg="blue",txt.col="red",n.cex=1), 
                        ancStates = F)
 ```
 
 You can also plot a 3D phylomorphospace using the 3rd PC, e.g.,
-```{r eval=F}
+```{r eval=FALSE}
 plotGMPhyloMorphoSpace(plethspecies$phy,Y.gpa$coords, zaxis= 3,
                         plot.param=list(n.cex=2, n.bg="blue"), shadow=TRUE)
 ```
@@ -1824,7 +1800,7 @@ plotGMPhyloMorphoSpace(plethspecies$phy,Y.gpa$coords, zaxis= 3,
 
 
 Using the option `zaxis = "time"`, the function plots a 3D phylomorphospace, with internal nodes positioned along the Z-axis scaled to time (a.k.a. Chronophylomorphospace, Sakamoto & Ruta 2012).
-```{r eval=F}
+```{r eval=FALSE}
 plotGMPhyloMorphoSpace(plethspecies$phy,Y.gpa$coords, zaxis= "time",
                         plot.param=list(n.cex=2, n.bg="blue"), shadow=TRUE)
 ```
@@ -1839,11 +1815,12 @@ plotGMPhyloMorphoSpace(plethspecies$phy,Y.gpa$coords, zaxis= "time",
 Function plots shape differences between a reference and target specimen.
 
 **Function**     
-```
+``` {r eval=FALSE}
 plotRefToTarget(M1, M2, mesh = NULL, outline = NULL, method = c("TPS",
   "vector", "points", "surface"), mag = 1, links = NULL, label = FALSE,
   gridPars = NULL, useRefPts = FALSE, ...)
 ```
+
 **Arguments**  
 
  * *M1*	Matrix of landmark coordinates for the first (reference) specimen
@@ -1864,7 +1841,7 @@ The option mag allows the user to indicates the degree of magnification to be us
 A 2D data example
 ```{r}
 data(plethodon)  # example dataset
-Y.gpa<-gpagen(plethodon$land)  # GPA-alignment
+Y.gpa<-gpagen(plethodon$land, print.progress = FALSE)  # GPA-alignment
 ref<-mshape(Y.gpa$coords)
 ```
 1. **TPS** a thin-plate spline deformation grid is generated. For 3D data, this method will generate thin-plate spline deformations in the x-y and x-z planes.
@@ -1925,17 +1902,17 @@ Now, a 3D data example using the three methods shown above
 ```{r}
 data(scallops)
 Y.gpa<-gpagen(A=scallops$coorddata, curves=scallops$curvslide, 
-surfaces=scallops$surfslide, PrinAxes = F)
+surfaces=scallops$surfslide, PrinAxes = FALSE, print.progress = FALSE)
 ref<-mshape(Y.gpa$coords)
 plotRefToTarget(ref,Y.gpa$coords[,,1],method="TPS", mag=3)
 ```
-```{r eval=F}
+```{r eval=FALSE}
 plotRefToTarget(ref,Y.gpa$coords[,,1],method="vector", mag=3)
 ```
 
 ![](scallop plotRefToTarget vec.png) 
 
-```{r eval=F}
+```{r eval=FALSE}
 plotRefToTarget(ref,Y.gpa$coords[,,1],method="points", mag=3)
 ```
 
@@ -1945,7 +1922,7 @@ plotRefToTarget(ref,Y.gpa$coords[,,1],method="points", mag=3)
 4. **surface** a mesh3d surface is warped using thin-plate spline (for 3D data only). Requires mesh3d object in option mesh, made using `warpRefMesh` (see below), which provides a mesh3d object that is the shape of the sample mean. It is recommended that the mean shape is used as the reference for warping (see Rohlf 1998).
 A 3D data example using the average mesh made with `warpRefMesh` 
 (Note: this example is not included in the *geomorph* package, but show here for illustrative purposes).
-```{r eval = FALSE}
+```{r eval=FALSE}
 ref <- mshape(Y.gpa$coords)  # calculate the mean shape from set of GPA-aligned specimens
 plotRefToTarget(M1=ref, M2=Y.gpa$coords[,,1], mesh=averagemesh, method="surface")
  # averagemesh is a mesh made with warpRefMesh,
@@ -1961,7 +1938,7 @@ Function plots the warped “target” shape (shown here against the mean for il
 The function returns a list containing shape coordinates ($pc.shapes) for the minimum and maximum shape of all PCs. To use, enter the coordinate matrix into position M2, e.g.,
 ```{r}
 data(plethodon)  # example dataset
-Y.gpa<-gpagen(plethodon$land)     # GPA-alignment
+Y.gpa<-gpagen(plethodon$land, print.progress = FALSE)     # GPA-alignment
 res <- plotTangentSpace(Y.gpa$coords, 
                         groups = factor(paste(plethodon$species, plethodon$site)))
 
@@ -1978,9 +1955,9 @@ layout(1)  # reset to 1 graph per plot
 `plot` of a `procD.allometry`object returns a list containing the shapes at the min and max size, which can be plotted as follows:
 ```{r}
 data(ratland)  # example dataset
-Y.gpa<-gpagen(ratland)     # GPA-alignment
+Y.gpa<-gpagen(ratland, print.progress = FALSE)     # GPA-alignment
  # perform the Multivariate Regression
-Allom <- procD.allometry(Y.gpa$coords ~ Y.gpa$Csize) 
+Allom <- procD.allometry(Y.gpa$coords ~ Y.gpa$Csize, print.progress = FALSE) 
  # plot the Multivariate Regression and save the min/max shapes
 res <- plot(Allom, method="RegScore", shapes=TRUE) 
 
@@ -1997,8 +1974,8 @@ layout(1)  # reset to 1 graph per plot
 `plot` of a `pls` object returns a list containing the shapes at the min and max of PLS1 axis for one or both blocks (only if the data were inputted as 3D arrays), which can be plotted as follows:
 ```{r comment=""}
 data(plethShapeFood)  # example dataset 
-Y.gpa<-gpagen(plethShapeFood$land)     # GPA-alignment  
-PLS <-two.b.pls(Y.gpa$coords,plethShapeFood$food,iter=999)
+Y.gpa<-gpagen(plethShapeFood$land, print.progress = FALSE)     # GPA-alignment  
+PLS <-two.b.pls(Y.gpa$coords,plethShapeFood$food,iter=999, print.progress = FALSE)
 res <- plot(PLS, shapes=TRUE)  # PLS plot
 
 layout(mat=matrix(c(1,2), ncol=2))  # set up two part layout for plotting
@@ -2014,7 +1991,7 @@ layout(1)  # reset to 1 graph per plot
 for groups shown to be significantly different with `procD.lm`, first average the data by groups, calculate group means and plot those means:
 ```{r}
 data(plethodon)
-Y.gpa<-gpagen(plethodon$land)     # GPA-alignment
+Y.gpa<-gpagen(plethodon$land, print.progress = FALSE)     # GPA-alignment
  # calculate mean shape for each group
 means <- aggregate(two.d.array(Y.gpa$coords) ~ plethodon$site, FUN=mean) 
  # make mean vectors as matrix
@@ -2029,7 +2006,7 @@ plotRefToTarget(ref, Allo.mn, method="TPS")  # shape of group
 Function plots landmark coordinates for a set of specimens.
 
 **Function**     
-```{r eval=F}
+```{r eval=FALSE}
 plotAllSpecimens(A, mean = TRUE, links = NULL, label = FALSE, plot.param = list())
 ```
 
@@ -2047,7 +2024,7 @@ Example for 2D data
 data(plethodon)
 
 ```{r comment = ""}
-Y.gpa<-gpagen(plethodon$land)  # GPA
+Y.gpa<-gpagen(plethodon$land, print.progress = FALSE)  # GPA
 plethodon$links  # look at links matrix
 plotAllSpecimens(Y.gpa$coords,links=plethodon$links,label=T, 
                  plot.param = list(pt.bg = "green", mean.cex=1, link.col="red", 
@@ -2055,10 +2032,10 @@ plotAllSpecimens(Y.gpa$coords,links=plethodon$links,label=T,
 ```
 
 Example for 3D data
-```{r eval=F}
+```{r eval=FALSE}
 data(scallops)
 Y.gpa <- gpagen(A=scallops$coorddata, curves=scallops$curvslide, 
-                surfaces=scallops$surfslide)
+                surfaces=scallops$surfslide, print.progress = FALSE)
 scallinks <- matrix(c(1,rep(2:16, each=2),1), nrow=16, byrow=TRUE) # make links matrix
 plotAllSpecimens(Y.gpa$coords,links=scallinks, 
                  plot.param= list(pt.bg = "blue",link.col="red"))
@@ -2074,7 +2051,7 @@ plotAllSpecimens(Y.gpa$coords,links=scallinks,
 Function plots a set of Procrustes-aligned specimens ordered by their distance from the mean shape. It is used as a tool to aid identifying specimens that have been digitized wrong (for example, mixing up landmark order). Specimens falling outside of the upper quartile range are potential outliers. We do not, however, stipulate that they must be removed or are wrong.
 
 **Function**    
-```{r eval=F}
+```{r eval=FALSE}
 `plotOutliers(A, groups = NULL)
 ```
 
@@ -2093,7 +2070,7 @@ newland <- plethodon$land  # make copy of example dataset
 dimnames(newland)[[3]] <- paste("pleth", 1:dim(newland)[3], sep="")
 newland[c(1,8),,2] <- newland[c(8,1),,2]  # swap lmks 1 and 8 of specimen 2
 newland[c(3,11),,26] <- newland[c(11,3),,2]  # swap lmks 3 and 11 of specimen 26
-Y <- gpagen(newland)  # perform GPA
+Y <- gpagen(newland, print.progress = FALSE)  # perform GPA
 plotOutliers(Y$coords)
 ```
 If there are outliers, then we can view them:
@@ -2109,7 +2086,9 @@ The way that the arrows cross over each other in these two plots are classic exa
 A function to plot three-dimensional (3D) specimen along with its landmarks.
 
 **Function**    
-`plotspec(spec, digitspec, fixed = NULL, ptsize = 1, centered = FALSE, ...)`
+```{r eval=FALSE}
+plotspec(spec, digitspec, fixed = NULL, ptsize = 1, centered = FALSE, ...)
+```
 
 **Arguments**   
 
@@ -2143,18 +2122,19 @@ Function plots the symmetric and asymmetric shape component, and the mean direct
 
 ### Example
 ```{r comment=""}
-data(mosquito) #eaxmple dataset
+data(mosquito) #example dataset
 gdf <- geomorph.data.frame(wingshape = mosquito$wingshape, 
                            ind=mosquito$ind, side=mosquito$side,
                            replicate=mosquito$replicate) # make geomorph data frame
 mosquito.sym <- bilat.symmetry(A = wingshape, ind = ind, side = side,
-       replicate = replicate, object.sym = FALSE, RRPP = TRUE, iter = 499, data = gdf)
+       replicate = replicate, object.sym = FALSE, RRPP = TRUE, iter = 499, 
+       data = gdf, print.progress = FALSE)
 plot(mosquito.sym, warpgrids = TRUE)
 ```
 
 ## `plot` on objects from `procD.allometry`
 **Function**    
-```{r eval=F}
+```{r eval=FALSE}
 plot(x, method = c("CAC", "RegScore", "PredLine"),
   warpgrids = TRUE, label = NULL, gp.label = FALSE, pt.col = NULL,
   mesh = NULL, shapes = TRUE, ...)
@@ -2182,17 +2162,18 @@ plot(x, method = c("CAC", "RegScore", "PredLine"),
 Comparing allometric slopes between groups (Homogeneity of Slopes Test)
 ```{r comment=""}
 data(plethodon) # example dataset
-Y.gpa <- gpagen(plethodon$land)    # GPA-alignment
+Y.gpa <- gpagen(plethodon$land, print.progress = FALSE)    # GPA-alignment
 # make geomorph data frame
 gdf <- geomorph.data.frame(shape = Y.gpa$coords, cs = Y.gpa$Csize, 
                            site = plethodon$site, species = plethodon$species) 
 # simple allometry
-plot(procD.allometry(shape~cs, logsz = TRUE, data=gdf, iter=499, RRPP=TRUE), 
-     method = "RegScore", warpgrids = T)
+plot(procD.allometry(shape~cs, logsz = TRUE, data=gdf, iter=499, 
+                     RRPP=TRUE, print.progress = FALSE), 
+                     method = "RegScore", warpgrids = T)
 
 # Comparing allometric slopes between groups
 plethAllometry <- procD.allometry(shape~cs, ~species*site,
-logsz = TRUE, data=gdf, iter=499, RRPP=TRUE)
+logsz = TRUE, data=gdf, iter=499, RRPP=TRUE, print.progress = FALSE)
   plot(plethAllometry, method = "PredLine")
   col.gp<-c(rep("black",10),rep("red",10),
             rep("yellow",10),rep("orange",10))  # not a factor
@@ -2211,9 +2192,10 @@ Plots the following graphs:
 ### Example
 ```{r comment=""}
 data(ratland) # example dataset
-rat.gpa<-gpagen(ratland)         # GPA-alignment
+rat.gpa<-gpagen(ratland, print.progress = FALSE)         # GPA-alignment
 gdf <- geomorph.data.frame(rat.gpa) # make geomorph data frame
-rat.anova <- procD.lm(coords ~ Csize, data = gdf, iter = 999, RRPP = TRUE)
+rat.anova <- procD.lm(coords ~ Csize, data = gdf, iter = 999, 
+                      RRPP = TRUE, print.progress = FALSE)
 plot(rat.anova) # diagnostic plots
 ```
 
@@ -2228,7 +2210,7 @@ Plots a histogram of the ratio of K (estimate of phylogenetic signal) sampling d
 
 ## `plot` on objects from `two.b.pls`, `integration.test` and `phylo.integration`
 **Function**    
-```{r eval=F}
+```{r eval=FALSE}
 plot(x, label = NULL, warpgrids = TRUE, shapes = TRUE, ...)
 ```
 
@@ -2243,10 +2225,11 @@ plot(x, label = NULL, warpgrids = TRUE, shapes = TRUE, ...)
 ### Example
 ```{r comment=""}
 data(plethodon)  # example dataset
-Y.gpa<-gpagen(plethodon$land) # GPA-alignment
+Y.gpa<-gpagen(plethodon$land, print.progress = FALSE) # GPA-alignment
 #landmarks on the skull and mandible assigned to partitions
 land.gps<-c("A","A","A","A","A","B","B","B","B","B","B","B") 
-IT <- integration.test(Y.gpa$coords, partition.gp=land.gps, iter=999)
+IT <- integration.test(Y.gpa$coords, partition.gp=land.gps, iter=999, 
+                       print.progress = FALSE)
 plot(IT) # PLS plot
 ```
 
@@ -2269,8 +2252,8 @@ plot(IT) # PLS plot
 data(motionpaths) #example datset
 gdf <- geomorph.data.frame(trajectories = motionpaths$trajectories,
                             groups = motionpaths$groups)
-TA <- trajectory.analysis(f1 = trajectories ~ groups, 
-                           traj.pts = 5, data=gdf, iter=199)
+TA <- trajectory.analysis(f1 = trajectories ~ groups, traj.pts = 5, 
+                          data=gdf, iter=199, print.progress = FALSE)
 plot(TA)
 plot(TA, group.cols = c("dark red", "dark blue", "dark green", "yellow"), 
 pt.seq.pattern = c("green", "gray30", "red"), pt.scale = 1.3)
@@ -2321,7 +2304,7 @@ gridPar(pt.bg = "gray", pt.size = 1.5, link.col = "gray", link.lwd = 2,
 **Examples**
 ```{r fig.align='center'}
 data(plethodon) # example dataset
-Y.gpa<-gpagen(plethodon$land)    #GPA-alignment
+Y.gpa<-gpagen(plethodon$land, print.progress = FALSE)    #GPA-alignment
 ref<-mshape(Y.gpa$coords)
 
 # Altering points and links
@@ -2366,7 +2349,7 @@ specimen7      # returns the name of the specimen
 A function to take an outline (defined by many points) and use thin-plate spline method to warp the outline into the estimated mean shape for a set of aligned specimens. This outline is used plotRefToTarget where outline= option is available.
 
 **Function**     
-```{reval=F}
+```{r eval=FALSE}
 warpRefOutline(file, mesh.coord, ref, color = NULL, centered = FALSE)
 ```
 
@@ -2429,7 +2412,7 @@ IV. For further visualiations, use av.outline$outline where `outline=` is specif
 A function to take a .ply file and use thin-plate spline method to warp the file into the estimated mean shape for a set of aligned specimens. This mesh is used in functions where mesh= option is available.
 
 **Function**   
-```{r eval=F}
+```{r eval=FALSE}
 warpRefMesh(file, mesh.coord, ref, color = NULL, centered = FALSE)
 ```
 
@@ -2579,7 +2562,7 @@ NOTE: there is no pan (translate) functionality in rgl library for all platforms
 
 **Example**
 reading in a mesh with 24700 vertices
-```{r eval=F}
+```{r eval=FALSE}
 mandible <- read.ply("Mandible.ply")
 digit.fixed(mandible, fixed=20, index=F, ptsize=1, center=T)
 Select Landmark 1 #
@@ -2629,7 +2612,7 @@ Function reads three-dimensional surface data in the form of a single ply file (
 
 ### Example
 reading a file called `myply.ply` in the working directory
-```{r eval=F}
+```{r eval=FALSE}
 read.ply(“myply.ply”, ShowSpecimen=TRUE) 
 
 # view an example in the geomorph package
@@ -2653,7 +2636,7 @@ myply$material <- "#FCE6C9" # using RGB code (right image)
 ##	3D data collection: landmarks and semilandmarks (`buildtemplate`)
 An interactive function to build template of three-dimensional surface sliding semilandmarks. Input for the function is either a matrix of vertex coordinates defining a 3D surface object or a mesh3d object as obtained from `read.ply`.
 
-```{r eval=F}
+```{r eval=FALSE}
 buildtemplate(spec, fixed, surface.sliders, ptsize = 1, center = TRUE)
 ```
 
@@ -2671,7 +2654,7 @@ To ensure a strong match between the scan and the template, it is recommended th
 
 ### Digitizing
 as before in `digit.fixed`, digitizing 16 landmarks on a mesh and then automatically calculate 150 surface sliding semilandmarks
-```{r eval=F}
+```{r eval=FALSE}
 myply1 <- read.ply("myply1.ply", ShowSpecimen=FALSE)
 buildtemplate(myply1, 16, 150, ptsize=1)
 Select Landmark 1 #See picture step 1
@@ -2726,7 +2709,7 @@ x
 ```
 
 which can be read in for use with `gpagen`.
-```{r eval=F}
+```{r eval=FALSE}
 sliders <- as.matrix(read.csv("surfslide.csv", header=T))
 ```
 
@@ -2780,7 +2763,7 @@ Some of the "fixed" landmarks digitized with digitsurface can be later designate
 Digitizing: as before in `digit.fixed`.
 
 **Example**, digitizing 16 landmarks on a mesh and fit a template to add 150 surface sliding semilandmarks
-```{r eval=F}
+```{r eval=FALSE}
 myply2 <- read.ply("myply2.ply", ShowSpecimen=FALSE)
 digitsurface(myply2, fixed=16, pysize=1
 Select Landmark 1
@@ -2832,7 +2815,7 @@ If 'closed = T', the function returns the coordinates of the 'start' landmark pl
 
 **Example**
 Here we have an outline of a leaf, exported as a .txt file of x,y, coordinates from ImageJ (see `warpRefOutline` for details on how this can be done).
-```{r eval=F}
+```{r eval=FALSE}
 curve <- as.matrix(read.table("Chusquea pittieri_1.txt", skip=4))
 start <- c(8.5143, 11.8367) # know the coordinates of the start of the curve
 plot(curve, asp=T, pch=19, cex=0.1) # plot the curve
@@ -2842,7 +2825,7 @@ points(start[1], start[2], pch=19, cex=0.5, col="red") # show the starting point
 ![](digit.curves1.png) 
 
  
-```{r eval=F}
+```{r eval=FALSE}
 lmks <- digit.curves(start, curve, nPoints=20, closed = T) # run function
 points(lmks[,1], lmks[,2], pch=19, cex=0.5, col="green") # plot the sampled points
 
@@ -2891,7 +2874,7 @@ This section will cover some of *geomorph's* frequently asked questions.
 4)	How do I reflect my specimens before using `gpagen` or `bilat.symmetry`? 
 - Reflecting a set of specimens may be accomplished by multiplying one coordinate dimension by '-1' for these structures (either the x-, the y-, or the z-dimension). To do this:
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 mydata # this is your 3D array of raw variables needing to be reflected
 refl <- array(1, dim=dim(mydata)) # make an array the same dimensions as mydata and fill it with 1s
 refl[,1,] <- -1 # replace the x coordinate column with -1
@@ -2901,7 +2884,7 @@ mydata <- mydata * refl # multiply the two arrays to reflect
 5)	I’ve loaded my TPS file and I got a warning that “Not all specimens have scale...”. I defined a scale by digitizing two landmarks on the scale bar, what do I do? 
 - Let’s say that landmarks 47 and 48 define the ends of the 10mm scale bar, and coords is a 3D array of the raw coordinate data:
 
-```{r eval = FALSE}
+```{r eval=FALSE}
 for (i in 1:dim(coords)[3]){
     scb <- coords[47:48,,i]
     scale <- sqrt((scb[1,1]-scb[2,1])^2+(scb[1,2]-scb[2,2])^2)/1000
