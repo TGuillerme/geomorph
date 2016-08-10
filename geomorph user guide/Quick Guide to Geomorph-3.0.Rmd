@@ -224,11 +224,11 @@ Landmark data in *geomorph* can be found as objects in two formats: a 2D array (
 **Figure 3** 2D array and 3D array of landmark coordinate data. NOTE: This example shows 3D landmark coordinate data, but the same format would be used for 2D coordinate data.
 
 #### 3D array (p x k x n)
-An array with three dimensions, i.e., number of rows (p), number of columns (k) and number of “sheets” (n). Imagine a 3D array like a stack of filing cards. Data in this format are needed for most *geomorph* analysis functions. If one has inputted data using `readland.nts()`, `readmulti.nts()`, `readland.tps()`, `read.morphologika()`, then the data will be a 3D array object. Check by typing
+An array with three dimensions, i.e., number of rows (p), number of columns (k) and number of “sheets” (n). Imagine a 3D array like a stack of filing cards. Data in this format are needed for most *geomorph* analysis functions. If one has inputted data using `readland.nts`, `readmulti.nts`, `readland.tps`, `read.morphologika`, then the data will be a 3D array object (unless the morphologika file contains other information, such as labels and groups, in which case the 3D array will be stored within the returned list as $coords). Check by typing
 ```{r comment = ""}
 dim(plethodon$land)
 ```
-If `dim()` gives three numbers, it is a 3D array. Here mydata has p=12, k=2, n=40. If `dim()` gives two numbers, it is a 2D array (a matrix). 
+If `dim` gives three numbers, it is a 3D array. Here mydata has p=12, k=2, n=40. If `dim` gives two numbers, it is a 2D array (a matrix). If `dim` returns NULL, they use `class` to determine what the format of the object is/ 
 
 #### 2D array (n x [p x k]) 
 An array (matrix) with two dimensions, i.e., number of rows (n) and number of columns (p*k).
@@ -2863,10 +2863,10 @@ ______
 This section will cover some of *geomorph's* frequently asked questions. 
 
 1)	I’ve loaded my TPS file but I get a warning that no names were extracted. My TPS file has specimen names in it, what do I do?
-- For TPS files it is necessary to specify whether the specimen name should be read from the “ID=” line or the “IMAGE=” line. See chapter 2 for more details.
+- For TPS files it is necessary to specify whether the specimen name should be read from the `ID=` line or the `IMAGE=` line. See chapter 2 for more details.
 
 2)	I want to add a groups to my data analysis, what do I do?
-- Grouping variables can be made in *R* (e.g., c()) or imported from outside (e.g., as a .csv file). See chapter 3 for more details.
+- Grouping variables can be made in *R* (e.g., `c`) or imported from outside (e.g., as a .csv file). See chapter 3 for more details.
 
 3)	How many iterations should I use in permutation tests?
 - The default for *geomorph* functions is often 999. Generally more is better, but too many can be excessive and does not lead to more power. See section on permutation tests in the introduction for more details.
