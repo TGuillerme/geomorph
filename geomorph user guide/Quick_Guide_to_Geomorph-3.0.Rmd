@@ -250,24 +250,25 @@ In several functions (e.g., `procD.lm`, `procD.gls`, `advanced.procD.lm`, `procD
 ## Statistical Designs
 For functions requiring a linear model formula, `f1`, the following is a guide for different models:
 
-An expression of the form y ~ model is interpreted as a specification that the response y is modelled by a linear predictor specified symbolically by model.  
+An expression of the form y ~ model is interpreted as a specification that the response y is modelled by a linear predictor specified symbolically by model (examples in the table below; not an exhaustive list! y is used to denote a single dependant variable, and Y is a matrix for multiple dependant variables). In geometric morphometrics with shape data, the x,y (and z) coordinates of all the landmarks are treated together as Y.  
 
 Common designs | f1
 ------------- | ------------- 
 Simple Linear Regression | `y ~ x`
-Single-factor MANOVA	| `y ~ a`
-Single-factor MANCOVA	| `y ~ x * a` 
-Multiple-factor MANOVA |	`y ~ a + b`
-Factorial MANOVA |	`y ~ a * b`  
-Nested MANOVA |	`y ~ a / b`
+Single-factor ANOVA	| `y ~ a`
+Multivariate Regression | `Y ~ x`
+Single-factor MANOVA	| `Y ~ a`
+Single-factor MANCOVA	| `Y ~ x * a` 
+Multiple-factor MANOVA |	`Y ~ a + b`
+Factorial MANOVA |	`Y ~ a * b`  
+Nested MANOVA |	`Y ~ a / b`
 
 NOTE: * denotes interaction. Suggested reading: http://www.statmethods.net/stats/anova.html
 
-For models that have 3 or more factors the option `int.first = TRUE/FALSE` is important. TRUE adds the interactions of first main effects before the subsequent main effects.  FALSE adds them in order, for example, the model: 
+Type I and II Sums of Squares (SS): For models that have 3 or more factors the option `int.first = TRUE/FALSE` is important. TRUE adds the interactions of first main effects before the subsequent main effects (Type I, a.k.a “sequential” SS).  FALSE adds them in order (Type II SS), for example, the model: 
 `shape ~ a*b*c`   
 `int.first = FALSE : shape ~ a + b + c + a:b + a:c + b:c + a:b:c`  
 `int.first = TRUE : shape ~ a + b + a:b + c +  a:c + b:c + a:b:c`   
-
 For one or two factors, this is inconsequential and thus `int.first` can be left at default.
 
 Finally, this manual only covers *geomorph* functions. It is recommended that users look to some "getting started with *R*” resources, such as [**Quick-R**](http://www.statmethods.net/), and the [**R Introduction manual**](http://cran.r-project.org/doc/manuals/R-intro.pdf), and various Springer eBooks in the series ‘Use *R*!’. Also highly recommended is J. Claude’s book Morphometric with *R* (2008).
