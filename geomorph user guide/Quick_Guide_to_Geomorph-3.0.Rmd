@@ -1,7 +1,7 @@
 ---
 title: "Quick Guide to Geomorph 3.0.3"
 author: "Emma Sherratt"
-date: "19 October 2016"
+date: "27 October 2016"
 output:
   pdf_document:
     number_sections: yes
