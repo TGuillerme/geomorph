@@ -1,7 +1,7 @@
 ---
 title: "Quick Guide to Geomorph 3.0.3"
 author: "Emma Sherratt"
-date: "27 October 2016"
+date: "4 November 2016"
 output:
   pdf_document:
     number_sections: yes
@@ -630,7 +630,7 @@ a
 ...
 ```
 
-##	Making a factor: group variables 
+##	Making a factor: group variables
 Many analyses will require a grouping variable (a classifier) for the data. For small datasets, this can be made easily within *R*:
 ```{r eval=FALSE}
 group <- factor(c(0,0,1,0,0,1,1,0,0))  # specimens assigned in order to group 0 or 1
@@ -667,7 +667,7 @@ attributes(plethodon)
 Here, plethodon is made up of 5 named objects (which are each vectors, matrices/2D arrays or 3D arrays). To access named objects within a list, use $, such as plethodon$links. The returned output of many *geomorph* functions is also in named list form. 
 Parts of a list can also be accessed using numbers with double square brackets [[]]. So in the above example. links is the 2nd object in the plethodon list, and so can also be accessed by plethodon[[2]]. For more details on this, a good resource is the website *R* tutorial (http://www.r-tutor.com/r-introduction/list).
 
-##  Subest 3D array of landmark coordinates by a factor
+##  Subest 3D array of landmark coordinates by a factor (`coords.subset`)
 This function takes a factor and splits a set of landmark coordinates into subsets, as described by the factor. The results is a list of separate sets of landmarks. See above for more information on lists.
 
 **Function**    
@@ -693,7 +693,7 @@ names(new.coords) # see the list levels
 ```
 
 ##  Averaging 3D array of landmark coordinates by a factor
-There is no geomoprh function to do this, because one can easily do this with `aggregate`. See 
+There is no geomorph function to do this, because one can easily do this with `aggregate`. See 
 <https://github.com/geomorphR/geomorph/wiki/Averaging-data-by-group> for more details.
 
 To use `aggregate` function, let's use an example using pupfish dataset:
@@ -872,7 +872,7 @@ plethodon.gpa$Csize # a vector of centroid sizes
 ```
 Other important information about the GPA is stored in the `plethodon.gpa` list. Use `attributes` to see, including: *iter* The number of GPA iterations until convergence was found (or GPA halted); *points.VCV Variance-covariance matrix among landmark coordinates; *points.var* Variances of landmark points; *consnsus* The consensus (mean) configuration; akin to using `mshape`; *data* Data frame with an n x (pk) matrix of Procrustes residuals and centroid size; *Q* Final convergence criterion value; *slide.method* Method used to slide semilandmarks.
 
-Stored in the example dataset `plethodon` are the wireframe links to aid visualisations. The function `plotAllSpecimens` plots landmark coordinates for a set of specimens:
+Stored in the example dataset `plethodon` are the wireframe links to aid visualizations. The function `plotAllSpecimens` plots landmark coordinates for a set of specimens:
 ```{r eval=FALSE}
   plotAllSpecimens(plethodon.gpa$coords,links=plethodon$links)
 ```
@@ -913,7 +913,7 @@ The landmarks listed in the middle column are the semilandmarks.
 ![The interactive define.sliders function](define_sliders_hummer 2.png)  
 This image is a visual version of the matrix, made using the interactive function `define.sliders` (see helper functions below).
 
-This curve sliding matrix is used in the `gpagen` option `curves`. There are two options for how the semilandmrks will slide, using Procrustes distance or bending energy: 
+This curve sliding matrix is used in the `gpagen` option `curves`. There are two options for how the semilandmarks will slide, using Procrustes distance or bending energy: 
 ```{r eval=FALSE}
 # Using Procrustes Distance for sliding
 A <- gpagen(hummingbirds$land,
@@ -1111,7 +1111,7 @@ curves <- as.matrix(read.csv("curveslide.csv", header=T))
 
 \pagebreak
 
-# Data Analysis
+# DATA ANALYSIS
 After the data have been superimposed with `gpagen` or `bilat.symmetry`, the Procrustes coordinates (e.g., `$coords` in the gpagen out list) can be used in many ordination methods and visualization methods.
 
 
@@ -1341,6 +1341,59 @@ PLS <-two.b.pls(Y.gpa$coords, plethShapeFood$food,
                 iter=999, print.progress = FALSE)
 summary(PLS) # Test summary
 plot(PLS) # PLS plot
+```
+
+## Helper function: `compare.pls`
+The function statistically compares the effect sizes of two or more PLS analyses. Typically, this function might be used to compare levels of integration between two or more samples, each measuring morphological integration between different modules. In such cases, the PLS correlation coefficient, r, is not a good measure of integration effect, as its expected value is dependent on both the number of specimens and number of variables (Adams and Collyer 2016). This analysis calculates effect sizes as standard deviates, z, and performs two-sample z-tests, using the pooled standard error from the sampling distributions of the PLS analyses.
+
+**Function**    
+```{r eval=FALSE}
+compare.pls(...)
+```
+**Arguments**    
+
+ * *...* saved analyses of class, "pls"
+ 
+To use this function, simply perform `two.b.pls`, `integration.test`, or `phylo.integration` on as many samples as desired. Any number of objects of class "pls" can be input.
+
+**Example**  
+Example of comparative morphological integration between pupfish head and body shapes
+```{r comment=""}
+data(pupfish) # GPA previously performed
+# define the groups
+group <- factor(paste(pupfish$Pop, pupfish$Sex, sep = "."))
+levels(group)
+# subset shape data by body part
+tail.LM <- c(1:3, 5:9, 18:38)
+head.LM <- (1:56)[-tail.LM]
+tail.coords <- pupfish$coords[tail.LM, , ]
+head.coords <- pupfish$coords[head.LM, , ]
+
+# Subset 3D array by group, returning a list of 3D arrays
+tail.coords.gp <- coords.subset(tail.coords, group)
+head.coords.gp <- coords.subset(head.coords, group)
+
+integ.tests <- Map(function(x, y) integration.test(x, y, iter = 499),
+head.coords.gp, tail.coords.gp)
+# the map function performs the integration test on each 3D array 
+# in the lists provided
+
+# View the results
+integ.tests$Marsh.F
+integ.tests$Marsh.M
+integ.tests$Sinkhole.F
+integ.tests$Sinkhole.M
+
+# Perform test
+group.Z <- compare.pls(integ.tests)
+summary(group.Z)
+
+# Result: Sexual dimorphism in morphological integration in one population
+# but not the other
+
+# can also list different PLS analyses, separately
+compare.pls(MF = integ.tests$Marsh.F, MM = integ.tests$Marsh.M)
+
 ```
 
 ______
@@ -1685,11 +1738,25 @@ Linear model fits (using the `lm` function) can also be input in place of a form
 
 If a single factor is provided, e.g., Y ~ A, it is assumed that groups to be described are the levels of factor A and that the data in Y comprise trajectories. In this case, the traj.pts = NULL argument must be changed to a numeric value to define the number of points in the trajectory. It is also assumed that the data are structured as variables within points. For example, y11 y21 y31 y12 y22 y32 y13 y23 y33 y14 y24 y34 would be columns of a matrix, Y, describing a 4-point trajectory in a data space defined by three variables. This is the proper arrangement; the following is an improper arrangement: y11 y12 y13 y14 y21 y22 y23 y24 y31 y32 y33 y34, as it groups points within variables. This approach is typical when comparing motion paths (see Adams and Cerney 2007).
 
-[Examples to be added]
+**Example**
+# Motion paths represented by 5 time points per motion 
+```{r comment="", fig.align='center', out.width = "200px"}
+data(motionpaths) # Simulated motion paths
+gdf <- geomorph.data.frame(trajectories = motionpaths$trajectories,
+groups = motionpaths$groups)
+TA <- trajectory.analysis(f1 = trajectories ~ groups, 
+traj.pts = 5, data=gdf, iter=199, print.progress = FALSE)
+summary(TA)
+# Various plotting examples
+plot(TA)
+plot(TA, group.cols = c("dark red", "dark blue", "dark green", "yellow"), pt.scale = 1.3)
+plot(TA, group.cols = c("dark red", "dark blue", "dark green", "yellow"), 
+pt.seq.pattern = c("green", "gray30", "red"), pt.scale = 1.3)
+```
 
 \pagebreak
 
-# Data Visualization
+# DATA VISUALIZATION
 The next 4 chapters will cover *geomorph's* visualization functions, organized as follows (hyperlinks): [ordination graphs](#ordination-graphs), [shape change graphs](#shape-change-graphs), [data inspection](#data-inspection), and [plots for analytical functions](#plots-for-analytical-functions). Plotting of Procrustes shape data requires many specialist plot functions that we have written to help users to quickly visuaalize their data, and provide the necessary information for users to produce their own publication quality graphs. Many of *geomorph*'s analytical functions decribed in Vigentte 3 return information in the form of a list that can simply be used in the S3 generic function plot also.
 
 # Ordination graphs
@@ -3114,7 +3181,8 @@ Adams, D. C. 2014. A generalized K statistic for estimating phylogenetic signal 
 Adams, D. C., and C. D. Anthony. 1996. Using randomization techniques to analyse behavioural data. Anim. Behav. 51:733-738.  
 Adams, D. C., and M. M. Cerney. 2007. Quantifying biomechanical motion using Procrustes Motion Analysis. J. Biomech. 40:437-444.  
 Adams, D. C., and M. L. Collyer. 2007. The analysis of character divergence along environmental gradients and other covariates. Evolution 61:510-515.  
----. 2009. A general framework for the analysis of phenotypic trajectories in evolutionary studies. Evolution 63:1143-1154.  
+---. 2009. A general framework for the analysis of phenotypic trajectories in evolutionary studies. Evolution 63:1143-1154. 
+---. 2016. On the comparison of the strength of morphological integration across morphometric datasets. Evolution. 70: 2623–2631.
 Adams, D. C., and R. Felice. 2014. Assessing phylogenetic morphological integration and trait covariation in morphometric data using evolutionary covariance matrices. Plos ONE 9:e94335.  
 Adams, D. C., and A. Nistri. 2010. Ontogenetic convergence and evolution of foot morphology in European cave salamanders (Family: Plethodontidae). BMC Evol. Biol. 10:216.  
 Adams, D. C., F. J. Rohlf, and D. E. Slice. 2004. Geometric morphometrics: ten years of progress following the 'revolution'. Italian Journal of Zoology 71:5-16.  
