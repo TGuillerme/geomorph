@@ -103,8 +103,11 @@ If you have questions or problems using geomorph, please post your questions to 
 
 Finally, I occasionally write source code for very specific issues to complement *geomorph* functions. They can be found here:  <http://emsherratt.github.io/MorphometricSupportCode/>.
 
-## Installing *geomorph* and *R*
-These instructions assume you already have *R* (and perhaps also RStudio) installed.
+## Installing *R* and *geomorph* 
+To install *R*, download the latest version from <https://www.r-project.org/>.
+For Mac users:  please also install XQuartz from <https://www.xquartz.org/>. This allows the library(rgl) to function.
+
+We suggest also installing RStudio <https://www.rstudio.com/products/RStudio/#Desktop>. 
 
 To install *geomorph* from CRAN
 ```{r eval=FALSE}
