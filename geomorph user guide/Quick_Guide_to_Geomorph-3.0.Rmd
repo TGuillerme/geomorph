@@ -1,7 +1,7 @@
 ---
-title: "Quick Guide to Geomorph 3.0.3"
+title: "Quick Guide to geomorph 3.0.3"
 author: "Emma Sherratt"
-date: "4 November 2016"
+date: "28 February 2017"
 output:
   pdf_document:
     number_sections: yes
@@ -735,7 +735,7 @@ One can also exploit bilateral symmetry to estimate the locations of missing lan
 
 Missing landmarks in a target specimen are designated by NA in place of the x,y,z coordinates. To make this so:
 ```{r eval=FALSE}
-any(is.na(mydata) # check if there are NAs in the data
+any(is.na(mydata)) # check if there are NAs in the data
 FALSE # if false then,
 mydata[which(mydata == -999)] <- NA # change missing values from "-999” to NAs
 ```
