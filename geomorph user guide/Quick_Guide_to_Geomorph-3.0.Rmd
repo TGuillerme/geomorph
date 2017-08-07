@@ -1,7 +1,7 @@
 ---
-title: "Quick Guide to geomorph 3.0.3"
+title: "Quick Guide to geomorph 3.0.5"
 author: "Emma Sherratt"
-date: "28 February 2017"
+date: "7 August 2017"
 output:
   pdf_document:
     number_sections: yes
@@ -20,13 +20,10 @@ output:
 *geomorph* is a freely available software package for geometric morphometric analyses of two- and three-dimensional landmark (shape) data in the *R* statistical computing environment. It can be installed from the Comprehensive *R* Archive Network, CRAN <http://cran.r-project.org/web/packages/geomorph/>.
 Occasionally, we make updates between uploads to CRAN. Users can install via GitHub the current beta version from <https://github.com/geomorphR/geomorph>.  
 
-How to cite: When using *geomorph* in publications, please cite the software with version and the publication. 
+How to cite: When using *geomorph* in publications, please cite the software with version
 ```{r comment=""}
 citation(package="geomorph")
 ```
-Also, since the package is quickly evolving, it is advisable to cite the CRAN package and version as: 
-
-Adams, D.C., M. L. Collyer, A. Kaliontzopoulou, and E. Sherratt. 2016 *geomorph*: Software for geometric morphometric analyses. *R* package version 3.0.2 HTTP://cran.r-project.org/web/packages/geomorph/index.html.  
 
 ## How to use this manual
 This manual is not meant to be exhaustive – the benefit of working within the *R* environment is its flexibility and infinite possibilities. Instead, the manual presents the functions in *geomorph* and how they can be used together to perform analyses to address a variety of questions in Biology, Anthropology, Paleontology, Archaeology, Medicine etc. This help guide is structured according to the pipeline outlined in **Figure 2**, which is based on a general workflow for morphometric analysis.  
@@ -46,12 +43,12 @@ readland.nts	|	coords.subset	|	bilat.symmetry
 readland.tps	|	define.links	|	compare.evol.rates
 readmulti.nts	|	define.modules	|	compare.multi.evol.rates
 |	|	estimate.missing	|	compare.pls
-|	|	findMeanSpec	|	modularity.test
-|	|	fixed.angle	|	globalIntegration
-|	|	mshape	|	gpagen
+|	|	findMeanSpec	|	globalIntegration
+|	|	fixed.angle	|	gpagen
+|	|	geomorph.data.frame	|	integration.test
+|	|	mshape	|	modularity.test
 |	|	two.d.array	|	morphol.disparity
 |	|	writeland.tps	|	nested.update
-|	|		|	integration.test
 |	|		|	phylo.pls
 |	|		|	physignal
 |	|		|	procD.lm
@@ -62,23 +59,24 @@ readmulti.nts	|	define.modules	|	compare.multi.evol.rates
 Visualization	|	Dataset	|	Digitizing
 ------------- 	|	------------- 	|	------------- 
 gridPar	|	hummingbirds	|	buildtemplate
-plotAllometry	|	larvalTails	|	define.sliders
-plotAllSpecimens	|	mosquito	|	digit.curves
-plotGMPhyloMorphoSpace	|	motionpaths	|	digit.fixed
-plotOutliers	|	plethodon	|	digitize2d
-plotRefToTarget	|	plethspecies	|	digitsurface
-plotspec	|	plethShapeFood	|	editTemplate
-plotTangentSpace	|	pupfish	|	read.ply
-shape.predictor	|	ratland	|	
-warpRefMesh	|	scallopPLY	|	
-warpRefOutline	|	scallops	|	
+plotAllSpecimens	|	larvalTails	|	define.sliders
+plotGMPhyloMorphoSpace	|	larvalMorph	|	digit.curves
+plotOutliers	|	mosquito	|	digit.fixed
+plotRefToTarget	|	motionpaths	|	digitize2d
+plotspec	|	plethodon	|	digitsurface
+plotTangentSpace	|	plethspecies	|	editTemplate
+shape.predictor	|	plethShapeFood	|	interlmkdist
+warpRefMesh	|	pupfish	|	read.ply
+warpRefOutline	|	ratland	|	
+	|	scallopPLY	|	
+	|	scallops	|	
 
 Throughout this manual, we will use the following abbreviations as is conventional in morphometrics and *R*: 
   `n`	 number of specimens/individuals    
   `p`	 number of landmarks  
   `k`	 number of dimensions  
   `#`	 a comment, in *R* this is text that is ignored (not run)  
-  `...`	 data not shown, or if inside a function then other options allowed  
+  `...`	 data not shown if in R output; other options allowed if in a function
   `code` 	 code to be written into the *R* console  
   `[1]`	 in a code example at the start of a line, a number in brackets denotes the first element of the output and is not intended to be typed  
 
@@ -86,7 +84,7 @@ Briefly understanding functions; below is a *geomorph* function annotated by col
 
 ```{r eval=FALSE}
 procD.allometry(f1, f2 = NULL, f3 = NULL, logsz = TRUE, iter = 999,
-  seed = NULL, alpha = 0.05, RRPP = TRUE, data = NULL, ...)
+  seed = NULL, alpha = 0.05, RRPP = TRUE, data = NULL)
 
 readland.tps(file, specID = c("None", "ID", "imageID"), readcurves = FALSE,
   warnmsg = TRUE) # # marks a comment; it is not code.
@@ -180,7 +178,7 @@ Below are some pathways to perform common analyses in *geomorph*. This is not an
 
 
 ## Example datasets in *geomorph*
-For chapters II through IV, many of the examples will be using data included with *geomorph*. There are ten datasets: `plethodon`, `scallops`, `hummingbirds`, `larvalTails`, `mosquito`, `ratland`, `plethspecies`, `plethShapeFood`, `motionpaths` and `scallopPLY`. It is advised to run and examine these example datasets before performing own analyses in order to understand how a function and its options work, and how one’s datasets should be formatted.  
+For chapters II through IV, many of the examples will be using data included with *geomorph*. There are 12 datasets: `plethodon`, `scallops`, `hummingbirds`, `larvalTails`, `larvalMorph`, `mosquito`, `ratland`, `plethspecies`, `plethShapeFood`, `pupfish`, `motionpaths` and `scallopPLY`. It is advised to run and examine these example datasets before performing own analyses in order to understand how a function and its options work.  
 To load an example dataset:
 ```{r comment = ""}
 data(plethodon)
@@ -244,10 +242,27 @@ dim(two.d.array(plethodon$land))
 The 2D array is most commonly the format for other variables (n x variables), such as interlandmark distances.
 
 ###	*geomorph* data frame 
-A data frame in *R* is usually used for storing tables data tables. In *geomorph* a `geomorph.data.frame` is a special list that contains all data to be used in your analyses. The purpose is similar to the base *R* function, `data.frame`, but without the constraint that data must conform to an `n` (observations) x `p` (variables) matrix. Rather, the list produced is constrained only by `n`. List objects can be Procrustes residuals (coordinates) arrays, matrices, variables, distance matrices, and phylogenetic trees. Results from `gpagen` can be directly imported into a geomorph.data.frame to utilize the coordinates and centroid size as variables. The `geomorph.data.frame` is of particular importance when using the functions: `procD.lm`, `procD.pgls`, `advanced.procD.lm`, `morphol.disparity`, `trajectory.analysis`.
+A data frame in *R* is usually used for storing tables data tables. In *geomorph* a `geomorph.data.frame` is a special list that contains all data to be used in your analyses. The purpose is similar to the base *R* function, `data.frame`, but without the constraint that data must conform to an `n` (observations) x `p` (variables) matrix. Rather, the list produced is constrained only by `n`. List objects can be Procrustes residuals (coordinates) arrays, matrices, variables, distance matrices, and phylogenetic trees. Results from `gpagen` can be directly imported into a geomorph.data.frame to utilize the coordinates and centroid size as variables. The `geomorph.data.frame` is of particular importance when using the functions: `procD.lm`, `procD.pgls`, `advanced.procD.lm`, `morphol.disparity`, `procD.allometry`, `trajectory.analysis`.
+
+```{r comment = ""}
+data(plethodon) 
+Y.gpa <- gpagen(plethodon$land,PrinAxes=FALSE, print.progress = FALSE)
+# make a geomorph dataframe from the output
+gdf <- geomorph.data.frame(Y.gpa)
+# here Y.gpa is a list containing coords and Csize, 
+# which is coreced into a geomorph dataframe
+attributes(gdf)
+
+
+gdf <- geomorph.data.frame(Y.gpa, species = plethodon$species, site = plethodon$site)
+attributes(gdf)
+```
+As with a regular R dataframe used in functions like `lm`, the dataframe is used where a geomorph function has the option data=. And the parts of the geomorph dataframe are called by name, e.g.:
+`procD.lm(coords ~ Csize + species * site, data = gdf)`
 
 ## Permutation tests
 Many of the function in *geomorph* test for statistical significance using a permutation procedure (e.g., Good 2000). A randomization test takes the original data, shuffles and resamples, calculates the test statistic and compares this to the original. This is repeated for a number of iterations, creating a distribution of random tests statistics in which the original can be evaluated. The proportion of random samples that provide a better fit to the data than the original provides the P-value. Therefore the number of decimal places for the P-value is correlated to the number of iterations. When deciding how many iterations to use more is better. However there is a point where it is time consuming and not helpful (Adams and Anthony 1996). The default in *geomorph* is 999, up to 10,000 is reasonable. The examples in this manual and on the package help files are usually very low to make them fast to run, and it is not recommended to run the function at these small iterations for one’s own data.
+
 In several functions (e.g., `procD.lm`, `procD.gls`, `advanced.procD.lm`, `procD.allometry`), two possible resampling procedures are provided. First, if `RRPP=FALSE`, the rows of the matrix of shape variables are randomized relative to the design matrix. This is analogous to a 'full' randomization. Second, if `RRPP=TRUE`, a residual randomization permutation procedure is utilized (Collyer et al. 2014). Here, residual shape values from a reduced model are obtained, and are randomized with respect to the linear model under consideration. These are then added to predicted values from the remaining effects to obtain pseudo-values from which SS are calculated. NOTE: for single-factor designs, the two approaches are identical. However, when evaluating factorial models it has been shown that RRPP attains higher statistical power and thus has greater ability to identify patterns in data should they be present (see Anderson and terBraak 2003).
 
 ## Statistical Designs
@@ -299,6 +314,7 @@ This function reads a .tps file containing two- or three-dimensional landmark co
 The name of the specimen can be given in the tps file by "ID=” (use specID=”ID”) or "IMAGE=” (use specID= "imageID”), otherwise the function defaults to specID= "None”. 
 
 If there are curves defined in the file (i.e., CURVES= fields), the option readcurves should be used. When readcurves = TRUE, the coordinate data for the curves will be returned as semilandmarks and will be appended to the fixed landmark data. Then the user needs to use define.sliders to create a matrix designating how the curve points will slide (used by 'curves=' in gpagen). When readcurves = FALSE, only the landmark data are returned (the curves are ignored).
+
 At present, all other information that can be contained in tps files (comments, variables, radii, etc.) is ignored.
 E.g. a text file called "ratland.tps" in the .tps format:
 ```{}
@@ -360,6 +376,8 @@ rats.nts
 -0.650 -0.580 -0.800 -0.340 -0.715 -0.090 -0.450 0 0 0 0.360 -0.445 0.040 -0.515 -0.300 -0.580
 ...
 ```
+Here, the 2D coordinate data are given for each specimen (each line)
+
 To read into *R*:
 ```{r eval=FALSE}
 mydata <- readland.nts("rats.nts")
@@ -370,9 +388,18 @@ mydata[,,1]
 [3,] -0.515 -0.120
 [4,] -0.330  0.000
 ...
+mydata[,,2]
+       [,1]   [,2]
+[1,] -0.530 -0.555
+[2,] -0.685 -0.320
+[3,] -0.625 -0.120
+[4,] -0.400  0.000
+...
 ```
 
-The function returns a 3D array containing the coordinate data, and if provided in the file, the names of the specimens (dimnames(mydata)[[3]]).
+The function returns a 3D array containing the coordinate data, and if provided in the file, the names of the specimens, which can be accessed by:
+`dimnames(mydata)[[3]]`
+
 Function is for *.nts file containing landmark coordinates for multiple specimens. Note that *.dta files in the nts format written by Landmark Editor <http://graphics.idav.ucdavis.edu/research/projects/EvoMorph>, and *.nts files written by Stratovan Checkpoint <http://www.stratovan.com/> have incorrect header notation; every header is 1 n p-x-k 1 9999 Dim=3, rather than 1 n p-x-k 0 Dim=3, which denotes that missing data is in the file even when it is not. NAs will be introduced unless the header is manually altered.
 
 ##	Multiple NTS files of single specimens (`readmulti.nts`)
@@ -693,6 +720,9 @@ names(new.coords) # see the list levels
 # access any element by:
 # new.coords$`Marsh F` # Can be used in any analysis, just like pupfish$coords
 # note `` surrounds level name because it has a space in it
+
+# group shape means
+group.means <- lapply(new.coords, mshape)
 ```
 
 ##  Averaging 3D array of landmark coordinates by a factor
@@ -813,7 +843,7 @@ new.plethdata <- fixed.angle(plethspecies$land,
 Function returns a 3D array containing the newly rotated data.
 
 ![The position of the mandible before running fixed.angle (left) and after (right)](fixed_angle.png)
- 
+
 \pagebreak
 
 # Generalized Procrustes Analysis
@@ -888,6 +918,7 @@ To view the options for this function
 The first example contained landmarks that are fixed, representing homologous points on the object. Oftentimes, researchers need to also use semilandmarks, which are points on a geometric feature (curve, edge, surface) defined mathematically in terms of its position on the feature (most commonly equally spaced). Semilandmarks provide information about curvature, and should be used alongside fixed landmarks. 
 
 ![Hummingbird dataset from Berns & Adams 2010](hummingbird.png)  
+
 The `hummingbird` dataset, from Berns & Adams 2010, contains fixed landmarks (open circles) and semilandmarks (closed circles) that define the curvature of the beak. When semilandmarks are included in the dataset, a few extra parameters should be specified in the `gpagen` function. 
 
 First a curve sliding matrix should be made, to tell the function which landmarks are semilandmarks and how they will slide during the superimposition. 
@@ -914,6 +945,7 @@ First a curve sliding matrix should be made, to tell the function which landmark
 
 The landmarks listed in the middle column are the semilandmarks.  
 ![The interactive define.sliders function](define_sliders_hummer 2.png)  
+
 This image is a visual version of the matrix, made using the interactive function `define.sliders` (see helper functions below).
 
 This curve sliding matrix is used in the `gpagen` option `curves`. There are two options for how the semilandmarks will slide, using Procrustes distance or bending energy: 
@@ -1001,7 +1033,8 @@ mosquito.sym <- bilat.symmetry(A = wingshape, ind = ind, side = side,
                 iter = 499, data = gdf, print.progress = FALSE) # perform matching symmetry GPA
 summary(mosquito.sym)
 ```
-Function returns the ANOVA table for analysis of symmetry and a graph showing the shape deformations relating to the symmetric and asymmetric components of shape. The function returns also the symmetric component of shape variation (`$symm.shape`) and the asymmetric component of shape variation (`$asymm.shape`), to be used in subsequent analyses, just as the Procrustes coordinates.
+Function returns the ANOVA table for analysis of symmetry and a graph showing the shape deformations relating to the symmetric and asymmetric components of shape. The function returns also the symmetric component of shape variation (`$symm.shape`) and the asymmetric component of shape variation (`$asymm.shape`), to be used in subsequent analyses, just as the Procrustes coordinates. NOTE: that the dimnames() of `$symm.shape` have a prefix ind. To remove, simply:
+``` dimnames(mosquito.sym$symm.shape)[[3]] <- sub("ind", "", dimnames(mosquito.sym$symm.shape)[[3]]) ```
 
 ### Example of object symmetry
 ```{r comment = ""}
@@ -1014,7 +1047,6 @@ summary(scallop.sym)
 ```
 
 ![Scallop data](object_symmetry.png)
-
 
 ******
 
@@ -1143,8 +1175,9 @@ Function performs Procrustes ANOVA with permutation procedures to assess statist
 
 **Function**  
 ```{r eval=FALSE}
-`procD.lm(f1, iter = 999, seed = NULL, RRPP = TRUE, 
-          int.first = FALSE, data = NULL, print.progress = TRUE, ...)
+procD.lm(f1, iter = 999, seed = NULL, RRPP = TRUE, 
+         effect.type = c("F", "SS", "cohen"), int.first = FALSE, 
+         data = NULL, print.progress = TRUE, ...)
 ```
 
 **Arguments**
@@ -1156,6 +1189,7 @@ If left NULL (the default), the exact same P-values will be found for repeated r
 If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values,
 which might be of interest for advanced users.
  * *RRPP* A logical value indicating whether residual randomization should be used for significance testing (see Introduction VI.	Permutation tests)
+ * *effect.type* One of "F", "SS", or "cohen", to choose from which random distribution to estimate effect size. (The option, "cohen", is for Cohen's f-squared values. The default is "F". Values are log-transformed before z-score calculation to assure normally distributed data.)
  * *int.first* A logical value to indicate if interactions of first main effects should precede subsequent main effects}
  * *data* A data frame for the function environment, see `geomorph.data.frame`
  * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses  
@@ -1201,8 +1235,46 @@ procD.lm(shape ~ species * site, data = gdf, iter = 999,
          RRPP = TRUE, print.progress = FALSE) 
 ```
 
+**Example**
+Multivariate Regression
+```{r  echo=FALSE, message = FALSE}
+library(geomorph)
+```
+```{r comment=""}
+data(ratland)
+rat.gpa<-gpagen(ratland, print.progress = FALSE) #GPA-alignment
+gdf <- geomorph.data.frame(rat.gpa) 
+# geomorph data frame is easy without additional input
+# uses lements of the rat.gpa list
+
+procD.lm(coords ~ Csize, data = gdf, iter = 999, RRPP = FALSE, 
+         print.progress = FALSE) # randomize raw values
+procD.lm(coords ~ Csize, data = gdf, iter = 999, RRPP = TRUE, 
+         print.progress = FALSE) # randomize raw values
+# Outcomes should be exactly the same
+```
+```{r comment="",fig.align='center', out.width = "350px"}
+### Extracting objects and plotting options
+rat.anova <- procD.lm(coords ~ Csize, data = gdf, iter = 999, RRPP = TRUE, 
+         print.progress = FALSE)
+summary(rat.anova)
+# diagnostic plots
+plot(rat.anova, type = "diagnostics") 
+# diagnostic plots, including plotOutliers
+plot(rat.anova, type = "diagnostics", outliers = TRUE) 
+# PC plot rotated to major axis of fitted values
+plot(rat.anova, type = "PC", pch = 19, col = "blue") 
+# Uses residuals from model to find the commonom regression component 
+# for a predictor from the model
+plot(rat.anova, type = "regression", predictor = gdf$Csize, reg.type = "CRC", 
+pch = 19, col = "green")
+# Uses residuals from model to find the projected regression scores
+rat.plot <- plot(rat.anova, type = "regression", predictor = gdf$Csize, reg.type = "RegScore", 
+pch = 21, bg = "yellow") 
+```
+
 ## Advanced Procrustes ANOVA and pairwise tests for shape data, using complex linear models (`advanced.procD.lm`)
-Function is an advanced version of `procD.lm`, which quantifies the relative amount of shape variation explained by a suite of factors and covariates in a "full" model, after accounting for variation in a "reduced" model. Inputs are formulae for full and reduced models (order is not important, but it is better to list the model with the most terms first or use a *geomorph* data frame), plus indication if means or slopes are to be compared among groups, with appropriate formulae to define how they should be compared. To see the manual page for this function, type `?geomorph::advanced.procD.lm`. (This function replaces the now defunct pairiwseD.test and pairiwse.slope.test).
+The function quantifies the relative amount of shape variation explained by a suite of factors and covariates in a "full" model, after accounting for variation in a "reduced" model. Inputs are formulae for full and reduced models (order is not important, but it is better to list the model with the most terms first or use a geomorph data frame), plus indication if means or slopes are to be compared among groups, with appropriate formulae to define how they should be compared. To see the manual page for this function, type `?geomorph::advanced.procD.lm`. (This function replaces the now defunct `pairiwseD.test` and `pairiwse.slope.test`).
 
 **Function**  
 ```{r eval=FALSE}
@@ -1231,19 +1303,63 @@ which might be of interest for advanced users.
  
  NOTE: This function can also be used with non-shape, multivariate data in y (e.g. a set of iterlandmark distances, a.k.a. linear measurements). 
 
-For more information on how to use this function see: http://geomorphpackage.blogspot.com.au/2015/06/advancedprocdlm-for-pairwise-tests-and.html
+For more information on how to use this function see: 
+https://github.com/geomorphR/geomorph/wiki/advanced.procD.lm-for-pairwise-tests-and-model-comparisons
 
 **Example**  
-Test of homogeneity of slopes, plus pairwise slopes comparisons
+Example of a nested model comparison (as with ANOVA with RRPP)
 ```{r comment=""}
 data(plethodon) # example dataset
 Y.gpa <- gpagen(plethodon$land, print.progress = FALSE)    # GPA-alignment  
-gdf <- geomorph.data.frame(shape = Y.gpa$coords, logcs = log(Y.gpa$Csize), 
-site = plethodon$site, species = plethodon$species) # make geomorph data frame
+gdf <- geomorph.data.frame(Y.gpa, species = plethodon$species, 
+site = plethodon$site) # make geomorph data frame
 
-advanced.procD.lm(shape ~ logcs, ~logcs + site*species, 
-groups = ~site*species, slope = ~logcs, angle.type = "deg", 
-iter = 199, data = gdf, print.progress = FALSE)
+ANOVA <-  advanced.procD.lm(f1= coords ~ log(Csize) + species,
+f2= ~ log(Csize)*species*site, iter=249, data = gdf,
+print.progress = FALSE)
+# summary(ANOVA, formula = FALSE) # formulas too long to print
+```
+
+Example of a test of a factor interaction, plus pairwise comparisons
+```{r comment=""}
+PW.means.test <- advanced.procD.lm(f1= coords ~ site*species, f2= ~ site + species, 
+groups = ~site*species, iter=249, data = gdf,
+print.progress = FALSE)
+# summary(PW.means.test, formula = TRUE)
+```
+
+Example of a test of a factor interaction, plus pairwise comparisons, accounting for a common allometry
+```{r comment=""}
+PW.ls.means.test <- advanced.procD.lm(f1= coords ~ Csize + site*species,
+f2= ~ log(Csize) + site + species,
+groups = ~ site*species, slope = ~log(Csize), iter = 249, data = gdf,
+print.progress = FALSE)
+# summary(PW.ls.means.test, formula = TRUE)
+```
+
+Example of a test of homogeneity of slopes, plus pairwise slopes comparisons
+```{r comment=""}
+gdf$group <- factor(paste(gdf$species, gdf$site, sep="."))
+HOS <- advanced.procD.lm(f1= coords ~ log(Csize) + group,
+f2= ~ log(Csize) * group, groups = ~ group,
+slope = ~ log(Csize), angle.type = "deg", iter = 249, data = gdf,
+print.progress = FALSE)
+# summary(HOS, formula = FALSE) # formulas too long to print
+```
+
+Example of partial pairwise comparisons, given greater model complexity. Plus, working with class advanced.procD.lm objects.
+```{r comment="",fig.align='center', out.width = "350px"}
+aov.pleth <- advanced.procD.lm(f1= coords ~ log(Csize)*site*species,
+f2= ~ log(Csize) + site*species, groups = ~ species, 
+slope = ~ log(Csize), angle.type = "deg", iter = 249, data = gdf,
+print.progress = FALSE)
+summary(aov.pleth, formula = FALSE)  # formulas too long to print
+
+# Diagnostic plots
+plot(aov.pleth) 
+
+# Extracting objects from results
+aov.pleth$slopes # extract the slope vectors
 ```
 
 ## Procrustes ANOVA/regression, specifically for shape-size covariation (allometry) (`procD.allometry`)
@@ -1251,8 +1367,9 @@ Function performs Procrustes ANOVA with permutation procedures to assess statist
 
 **Function**    
 ```{r eval=FALSE}
-procD.allometry(f1, f2 = NULL, f3 = NULL, logsz = TRUE, iter = 999,
-  seed = NULL, alpha = 0.05, RRPP = TRUE, , print.progress = TRUE, data = NULL, ...)
+procD.allometry(f1, f2 = NULL, logsz = TRUE, iter = 999,
+  seed = NULL, alpha = 0.05, RRPP = TRUE, effect.type = c("F", "SS", "cohen"), 
+  print.progress = TRUE, data = NULL, ...)
 ```
 
 **Arguments**   
@@ -1268,14 +1385,27 @@ If seed = "random", a random seed will be used, and P-values will vary.  One can
 which might be of interest for advanced users
  * *alpha* The significance level for the homegeneity of slopes test
  * *RRPP* A logical value indicating whether residual randomization should be used for significance testing (see Introduction VI.	Permutation tests)
+ * *effect.type* One of "F", "SS", or "cohen", to choose from which random distribution to estimate effect size. (The default is "F")
  * *print.progress* A logical value to indicate whether a progress bar should be printed to the screen. This is helpful for long-running analyses 
  * *data* A data frame for the function environment, see `geomorph.data.frame`
  * *...* Arguments passed on to `procD.fit` (typically associated with the `lm` function)
  
 **Details**  
-The function quantifies the relative amount of shape variation attributable to covariation with organism size (allometry) plus other factors in a linear model, plus estimates the probability of this variation ("significance") for a null model, via distributions generated from resampling permutations. Data input is specified by formulae (e.g., Y ~ X), where 'Y' specifies the response variables (shape data), and 'X' contains one or more independent variables (discrete or continuous). The response matrix 'Y' can be either in the form of a two-dimensional data matrix of dimension (n x [p x k]), or a 3D array (p x n x k). It is assumed that -if the data are based on landmark coordinates - the landmarks have previously been aligned using Generalized Procrustes Analysis (GPA) [e.g., with gpagen].
+The function quantifies the relative amount of shape variation attributable to covariation with organism size (allometry) plus (potentially) another grouping factor in a linear model, so as to provide initial visualizations of patterns of shape allometry. Data input is specified by formulae (e.g., Y ~ X), where 'Y' specifies the response variables (shape data), and 'X' contains A SINGLE independent continuous variable representing size. The response matrix 'Y' can be either in the form of a two-dimensional data matrix of dimension (n x [p x k]), or a 3D array (p x n x k). It is assumed that -if the data are based on landmark coordinates - the landmarks have previously been aligned using Generalized Procrustes Analysis (GPA) [e.g., with gpagen]. Additionally, one has the option of providing a second formula where groups are specified in the form of ~ group. If groups are provided a "homogeneity of slopes" test will be performed.
 
-There are three formulae that need to be input (see Arguments). The first must contain variables for shape and size, e.g., Y ~ X, where Y (dependent variable) is shape and X (independent variable) is size. The other two formulae are optional to indicate (1) groups for separate allometric curves and (2) additional model variables to consider in the ANOVA. The groups input must be a single factor or multiple factors. The resulting ANOVA uses sequential (Type I) sums of squares and cross-products with variables in this order: size, groups (if provided), size*groups (if warranted), other variables (if provided). If a factor for f2 (groups) is provided, ANOVA for a "homogeneity of slopes" test will also be performed.
+It is assumed that the order of the specimens in the shape matrix matches the order of values in the independent variables. Linear model fits (using the lm function) can also be input in place of formulae. Arguments for lm can also be passed on via this function. For further information about ANOVA in geomorph, resampling procedures used, and output, see procD.lm or advanced.procD.lm. If greater flexibility is required for variable order, advanced.procD.lm should be used.
+
+It is strongly recommended that geomorph.data.frame is used to create and input a data frame. This will reduce problems caused by conflicts between the global and function environments. In the absence of a specified data frame, procD.allometry will attempt to coerce input data into a data frame, but success is not guaranteed.
+
+The generic functions, print, summary, and plot all work with procD.allometry. The generic function, plot, produces plots of allometric curves, using one of three methods input (see below). If diagnostic plots on model residuals are desired, procD.lm should be used with the resulting model formula. This, along with the data frame resulting from analysis with procD.allometry can be used directly in procD.lm, which might be useful for extracting ANOVA components (as procD.allometry is far more basic than procD.lm, in terms of output).
+
+A note on allometric models
+
+This function is intended to be used for the graphical visualization of simple allometric patterns. The method is appropriate for models such as shape~log(size) and shape~log(size) + groups. Three plotting options, the common allometric coefficient (CAC), regression scores (RegScore), and predicted lines (PredLine) are implemented as originally described in the literature. NOTE however that for more complex models with additional parameters, one may instead wish to use the plotting capabilities that accompany `procD.lm` (see below for more details).
+
+Notes for experienced or advanced users
+
+Experienced or advanced users will probably prefer using `procD.lm` with a combination of `plot.procD.lm`, `shape.predictor`, and `plotRefToTarget` for publication-quality analyses and graphics. As stated above, use of `procD.allometry` is for visualizing simple allometric models that do not contain additional covariates. Thus, `procD.allometry` may be thought of as a wrapper function for `procD.lm`, but only for a restricted set of models and using a philosophy for model selection based on the outcome of a homogeneity of slopes test. This is not necessary if one wishes to define a model, irrespective of this outcome, or if more complex models are of interest. In these circumstances `procD.lm` offers much greater flexibility, and provides more statistically general approaches to visualizing patterns. Thus, `procD.allometry` might be thought of as an exploratory tool, if one is unsure how to model allometry for multiple groups. One should not necessarily accept the `procD.allometry` result as "truth" and other models can be explored with `procD.lm`. Examples for more flexibile approaches to modeling allometry using procD.lm are provided below.
  
 **Example**  
 Simple allometry
@@ -1283,10 +1413,11 @@ Simple allometry
 data(plethodon) # example dataset
 Y.gpa <- gpagen(plethodon$land, print.progress = FALSE)    # GPA-alignment  
 # make geomorph data frame
-gdf <- geomorph.data.frame(shape = Y.gpa$coords, cs = Y.gpa$Csize) 
+gdf <- geomorph.data.frame(Y.gpa, site = plethodon$site, 
+species = plethodon$species) 
 
-plethAllometry <- procD.allometry(shape~cs, logsz = TRUE, data=gdf, 
-                                  iter=499, print.progress = FALSE)
+plethAllometry <- procD.allometry(coords~Csize, f2 = NULL, f3=NULL, 
+logsz = TRUE, data=gdf, iter=249, print.progress = FALSE)
 summary(plethAllometry) # results identical to procD.lm
 ```
 
@@ -1302,19 +1433,6 @@ shape.resid <- arrayspecs(plethAnova$residuals,
 # make allometry-free shapes
 adj.shape <- shape.resid + array(Y.gpa$consensus, dim(shape.resid)) 
 plotTangentSpace(adj.shape) # PCA of allometry-free shape
-```
-
-Comparing allometric slopes between groups (Homogeneity of Slopes Test)
-```{r comment="",fig.align='center', out.width = "350px"}
-data(plethodon) # example dataset
-Y.gpa <- gpagen(plethodon$land, print.progress = FALSE)    # GPA-alignment
-# make geomorph data frame
-gdf <- geomorph.data.frame(shape = Y.gpa$coords, cs = Y.gpa$Csize, 
-                           site = plethodon$site, species = plethodon$species) 
-plethAllometry <- procD.allometry(shape~cs, ~species*site,
-logsz = TRUE, data=gdf, iter=499, RRPP=TRUE, print.progress = FALSE)
-summary(plethAllometry)
-plot(plethAllometry, method = "PredLine")
 ```
 
 ## Two-block partial least squares analysis for shape data (`two.b.pls`)
@@ -1376,8 +1494,9 @@ head.coords <- pupfish$coords[head.LM, , ]
 tail.coords.gp <- coords.subset(tail.coords, group)
 head.coords.gp <- coords.subset(head.coords, group)
 
-integ.tests <- Map(function(x, y) integration.test(x, y, iter = 499),
-head.coords.gp, tail.coords.gp)
+integ.tests <- Map(function(x, y) integration.test(x, y, iter = 499, 
+              print.progress = FALSE),
+              head.coords.gp, tail.coords.gp)
 # the map function performs the integration test on each 3D array 
 # in the lists provided
 
@@ -1488,7 +1607,6 @@ Press esc when finished
 ```
 
 ![define.modules1](define.modules.png)
-
 ```{r eval=FALSE}
 Select landmarks in module 2
 Press esc when finished 
@@ -1642,7 +1760,8 @@ Function performs Procrustes ANOVA and regression models in a phylogenetic conte
 **Function**    
 ```{r eval=FALSE}
 procD.pgls(f1, phy, iter = 999, seed = NULL, int.first = FALSE,
-  RRPP = TRUE, data = NULL, print.progress = TRUE, ...)
+  effect.type = c("F", "cohen"), RRPP = TRUE, 
+  data = NULL, print.progress = TRUE, ...)
 ```
 
 **Arguments**  
@@ -1651,7 +1770,8 @@ procD.pgls(f1, phy, iter = 999, seed = NULL, int.first = FALSE,
  * *phy* A phylogenetic tree of class phylo - see `?ape::read.tree` (optional)
  * *iter* Number of iterations for significance testing
  * *seed* An optional argument for setting the seed for random permutations of the resampling procedure. If left NULL (the default), the exact same P-values will be found for repeated runs of the analysis (with the same number of iterations). If seed = "random", a random seed will be used, and P-values will vary.  One can also specify an integer for specific seed values, which might be of interest for advanced users
- * *int.first* A logical value to indicate if interactions of first main effects should precede subsequent main effects}
+ * *int.first* A logical value to indicate if interactions of first main effects should precede subsequent main effects
+ * *effect.type* One of "F" or "cohen", to choose from which random distribution to estimate effect size. (The default is "F". The option, "cohen", refers to Cohen's f-squared values. Values are log-transformed before z-score calculation to assure normally distributed effect sizes.)
  * *RRPP* A logical value indicating whether residual randomization should be used for significance testing (see Introduction VI.	Permutation tests)
  * *data* A data frame for the function environment, see `geomorph.data.frame`
  * *...* Arguments passed on to procD.fit (typically associated with the `lm` function)
@@ -2059,7 +2179,7 @@ plotRefToTarget(M, preds$alloJord, outline = plethodon$outline)
 We shal use a different example dataset to show how 
 ```{r fig.align='center', out.width = "350px"}
 data(plethShapeFood) 
-Y.gpa<-gpagen(plethShapeFood$land)    #GPA-alignment    
+Y.gpa<-gpagen(plethShapeFood$land, print.progress = FALSE)    #GPA-alignment    
 
 # 2B-PLS between head shape and food use data
 PLS <-two.b.pls(plethShapeFood$food,Y.gpa$coords, iter=999) 
@@ -2178,14 +2298,11 @@ plotRefToTarget(ref,Y.gpa$coords[,,1],method="vector", mag=3)
 ```
 
 ![Scallop shell shape represented by method="vector"](scallop plotRefToTarget vec.png) 
-
 ```{r eval=FALSE}
 plotRefToTarget(ref,Y.gpa$coords[,,1],method="points", mag=3)
 ```
 
 ![Scallop shell shape represented by method="points"](scallop plotRefToTarget pts.png) 
-
-
 4. **surface** a mesh3d surface is warped using thin-plate spline (for 3D data only). Requires mesh3d object in option mesh, made using `warpRefMesh` (see below), which provides a mesh3d object that is the shape of the sample mean. It is recommended that the mean shape is used as the reference for warping (see Rohlf 1998).
 A 3D data example using the average mesh made with `warpRefMesh` 
 (Note: this example is not included in the *geomorph* package, but show here for illustrative purposes).
@@ -2197,8 +2314,6 @@ plotRefToTarget(M1=ref, M2=Y.gpa$coords[,,1], mesh=averagemesh, method="surface"
 ```
 
 ![Scallop shell shape represented as a warped 3D mesh](warped_mesh.png) 
-
-
 Function plots the warped "target” shape (shown here against the mean for illustrative purposes only). This function can be used to show deformations between *any two sets of coordinates*. Coordinate data are provided by several functions, a few examples given below.
 
 #### Example 1 `plotTangentSpace` 
@@ -2223,8 +2338,10 @@ layout(1)  # reset to 1 graph per plot
 ```{r fig.align='center', out.width = "350px"}
 data(ratland)  # example dataset
 Y.gpa<-gpagen(ratland, print.progress = FALSE)     # GPA-alignment
+gdf <- geomorph.data.frame(Y.gpa)
  # perform the Multivariate Regression
-Allom <- procD.allometry(Y.gpa$coords ~ Y.gpa$Csize, print.progress = FALSE) 
+Allom <- procD.allometry(coords ~ Csize, data=gdf, 
+                         print.progress = FALSE) 
  # plot the Multivariate Regression and save the min/max shapes
 res <- plot(Allom, method="RegScore", shapes=TRUE) 
 
@@ -2377,7 +2494,6 @@ plotspec(spec=scallopPLY$ply, digitspec=scallopPLY$coords, fixed=16, centered =T
 ```
 
 ![A scallop 3D mesh with landmarks plotted on top](plotspec.png) 
-
 The fixed landmarks and curve semilandmarks are in red, and the surface semilandmarks are in green.
 
 # Plots for analytical functions
@@ -2673,7 +2789,6 @@ $names
 ```
 
 ![Example of a warped outline](warpRefOutline.png)
-
 IV. For further visualiations, use av.outline$outline where `outline=` is specified. `npoints` is a list of the number of points for each curve, and is currently not used in *geomorph* but will be in future versions. 
 
 
@@ -2714,7 +2829,6 @@ averagemesh <- warpRefMesh(sp7.ply, sp7, mshape(mydata))
 ```
 
 ![Example of a warped 3D mesh](warpRefMesh.png)
-
 IV.	Use this average mesh where it asks for a `mesh=` in the visualization functions
 For landmark coordinates digitized with *geomorph* digitizing functions `centered=TRU` by default. This refers to the specimen being centered prior to landmark acquisition in the RGL window. For landmark data collected outside of *geomorph*, `centered=FALSE` will usually be the case. The returned mesh3d object is for use in *geomorph* functions where shape deformations are plotted and mesh= option is available (`plotTangentSpace`, `plotRefToTarget`, and using plot on several analytical functions). 
 
@@ -2761,7 +2875,6 @@ Set scale = 3
 ```
 
 ![Digitizing window](digitize2d 1.png) 
-
 ```{r eval=FALSE}
 Keep scale (y/n)?
 y
@@ -2772,8 +2885,6 @@ Select landmarks 1:11
 ```
 
 ![Digitizing window](digitize2d 2.png) 
-
-
 If`verbose = TRUE`, digitizing is interactive between landmark selection using a mouse and the *R* console. Once a landmark is selected, the user is asked if the system should keep or discard the selection (y/n/a). If "y", the user is asked to continue to select the next landmark. If "n", the user is asked to select it again.
 To **digitize a missing landmark**, simply click on any location in the image. Then, when prompted to keep selection, choose 'a' (for absent). Missing landmarks can only be included during the digitizing process when `verbose=TRUE`.
 If `verbose = FALSE` (as in the example above) the digitizing of landmarks is continuous and uninterrupted. Here the user will not be prompted to approve each landmark selection.
@@ -2845,7 +2956,6 @@ Select Landmark 3 #See picture step 1
 
 ![A mesh digitized using `digit.fixed`](digit.fixed.png) 
 
-
 Function writes to the working directory an NTS file with the name of the specimen and .nts suffix containing the landmark coordinates. 
 
 *mandible.nts*
@@ -2900,8 +3010,6 @@ myply$material <- "#FCE6C9" # using RGB code (right image)
 ```
 
 ![rgl window with a 3D mesh](plot ply.png) 
-
-
 ##	3D data collection: landmarks and semilandmarks (`buildtemplate`)
 An interactive function to build template of three-dimensional surface sliding semilandmarks. Input for the function is either a matrix of vertex coordinates defining a 3D surface object or a mesh3d object as obtained from `read.ply`.
 
@@ -2932,13 +3040,9 @@ y
 ```
 
 ![rgl window for digitizing](digit.fixed scallop.png)
-
-
 Select all of the fixed landmarks, and then the function will calculate the position of the surface sliding landmarks on the mesh, and plot them in blue.
 
 ![rgl window for digitizing](digit.fixed scallop2.png)
-
-
 Function writes to the working directory three files: an NTS file with the name of the specimen and .nts suffix containing the landmark coordinates, "template.txt" containing the same coordinates for use with the function `digitsurface`, and "surfslide.csv", a file containing the address of the landmarks defined as "surface sliders" for use with `gpagen`. Function also returns to console an n x 3 matrix containing the x,y,z coordinates of the digitized landmarks. NOTE: that the function will overwrite any existing template.txt file in the directory.
 
 *myply1.nts*
@@ -3023,9 +3127,6 @@ Remove Template Points
 ```
 
 ![rgl window for editing template](edit template.png) 
-
-
-
 ## 3D data collection: landmarks and semilandmarks (`digitsurface`)
 An interactive function to digitize three-dimensional (3D) landmarks on a surface lacking known landmarks, used after `buildtemplate`. Input for the function is either a matrix of vertex coordinates defining a 3D surface object or a mesh3d object as obtained from `read.ply`. For this function to work the "template.txt" file, made by `buildtemplate` must be in the working directory.
 
@@ -3056,7 +3157,6 @@ y
 ```
 
 ![rgl window for digitizing](digitsurface.png) 
-
 Select all of the fixed landmarks, and then the function will calculate the position of the surface sliding landmarks on the mesh based on the template (blue), and plot them in green.
 
 Function writes to the working directory an NTS file with the name of the specimen and .nts suffix containing the landmark coordinates. 
@@ -3079,6 +3179,7 @@ The function as described above (for interactive mode) calls `digit.fixed`, prom
 
 ##	Calculate semilandmarks along a curve (`digit.curves`)
 A function to calculate equidistant two-dimensional and three-dimensional semilandmarks along a curve. These landmarks will be treated as "sliders" in Generalized Procrustes analysis `gpagen`. This type of semilandmark "slides" along curves lacking known landmarks (see Bookstein 1997 for algorithm details). Each sliding semilandmark ("sliders") will slide between two designated points, along a line tangent to the specified curvature, as specified by `define.sliders`. 
+
 **Function**  
 ```{r eval=FALSE}
 digit.curves(start, curve, nPoints, closed=TRUE)
@@ -3107,7 +3208,6 @@ points(start[1], start[2], pch=19, cex=0.5, col="red") # show the starting point
 ```
 
 ![An example curve defined by pixels extracted from a picture in ImageJ. Start is in red](digit.curves1.png) 
-
 ```{r eval=FALSE}
 lmks <- digit.curves(start, curve, nPoints=20, closed = T) # run function
 points(lmks[,1], lmks[,2], pch=19, cex=0.5, col="green") # plot the sampled points
@@ -3140,6 +3240,19 @@ lmks
 
 ![Semilandmarks digitized on the curve (green) ](digit.curves2.png) 
 
+##	Calculate linear distances between landmarks (`interlmkdist`)
+A simple function to calculate linear distances between a set of landmark coordinates (interlandmark distances) 
+
+**Function**  
+```{r eval=FALSE}
+interlmkdist(A, lmks)
+```
+**Arguments**  
+
+ * *A*	A 3D array (p x k x n) containing landmark coordinates for a set of specimens
+ * *lmks*	A matrix or dataframe of landmark addresses for the start and end landmarks defining m linear measurements (can be either 2-x-m or m-x-2). Either the rows or the columns should have names 'start' and 'end' to define landmarks
+
+Function takes a 3D array of landmark coordinates from a set of specimens and the addresses for the start and end landmarks defining linear measurements and then calculates the interlandmark distances. The function returns a matrix of linear distances for all specimens. If the 'lmks' matrix has row or column names defining the name of the linear measurements, the returned matrix will use these for column names (see example). If only two interlandmark distances, 'lmks' input must be m x 2. Function returns a matrix (n x m) of m linear distances for n specimens.
 ______
 
 # Frequently Asked Questions
@@ -3226,6 +3339,4 @@ Rohlf, F. J. 2002. Geometric morphometrics and phylogeny. Pp. 175-193 in N. MacL
 Rohlf, F. J., and M. Corti. 2000. Use of two-block partial least-squares to study covariation in shape. Syst. Biol. 49:740-753.  
 Rohlf, F. J., and L. F. Marcus. 1993. A revolution in morphometrics. Trends Ecol. Evol. 8:129-132.  
 Rohlf, F. J., and D. Slice. 1990. Extensions of the Procrustes method for the optimal superimposition of landmarks. Syst. Zool. 39:40-59.  
-Zelditch, M. L., D. L. Swiderski, and H. D. Sheets. 2012. Geometric morphometrics for biologists: a primer. 2nd ed. Elsevier, Amsterdam.  
-
-
+Zelditch, M. L., D. L. Swiderski, and H. D. Sheets. 2012. Geometric morphometrics for biologists: a primer. 2nd ed. Elsevier, Amsterdam.
